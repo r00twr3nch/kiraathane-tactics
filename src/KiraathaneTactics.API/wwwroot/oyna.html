@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Oyna — Kıraathane Tactics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,680&family=Outfit:wght@400;500;650&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="landing.css?v=7" />
+</head>
+<body class="page-play">
+  <div class="room" aria-hidden="true">
+    <div class="lamp"></div>
+    <div class="haze"></div>
+  </div>
+  <header class="top">
+    <a class="brand" href="/index.html">Kıraathane</a>
+    <nav class="desk-nav" aria-label="Sayfa">
+      <a href="/siralama.html">Sıralama</a>
+      <a href="/kurallar.html">Kurallar</a>
+      <a href="/oyna.html" aria-current="page">Oyna</a>
+    </nav>
+  </header>
+  <main>
+    <section class="panel play-panel" aria-labelledby="play-title">
+      <h1 id="play-title">Nasıl oturacaksın?</h1>
+      <p class="lede">Çaycı hemen gelir. Oda kodu arkadaş içindir. Online boş masaya oturur.</p>
+      <div class="mode-grid">
+        <article class="mode">
+          <h2>Çaycıyla oyna</h2>
+          <p>Karşıda kimse yoksa önlük bağlanır.</p>
+          <fieldset class="levels">
+            <legend>Çaycının eli</legend>
+            <label><input type="radio" name="level" value="cirak" /> Çırak</label>
+            <label><input type="radio" name="level" value="kalfa" checked /> Kalfa</label>
+            <label><input type="radio" name="level" value="usta" /> Usta</label>
+          </fieldset>
+          <button type="button" class="cta" id="play-bot">Çaycı gelsin</button>
+        </article>
+        <article class="mode">
+          <h2>Oda kur</h2>
+          <p>Kod çıkar, karşıdaki aynı kodla oturur.</p>
+          <button type="button" class="cta" id="host-room">Kod çıkar</button>
+          <p class="code" id="host-code" hidden></p>
+        </article>
+        <article class="mode">
+          <h2>Online oyna</h2>
+          <p>Boş masa varsa otur, yoksa sıraya yazıl.</p>
+          <button type="button" class="cta" id="find-rival">Boş masa ara</button>
+        </article>
+      </div>
+      <p class="note" id="queue-note" role="status"></p>
+    </section>
+  </main>
+  <dialog id="queue" aria-labelledby="queue-title">
+    <form method="dialog">
+      <h2 id="queue-title">Masa bakılıyor</h2>
+      <p id="queue-copy">Boş masa aranıyor.</p>
+      <p class="code" id="queue-code" hidden></p>
+      <menu>
+        <button type="submit" value="cancel" class="cta ghost" id="queue-cancel">Vazgeç</button>
+      </menu>
+    </form>
+  </dialog>
+  <nav class="dock" aria-label="Masa">
+    <a href="/siralama.html"><span class="mark" aria-hidden="true"></span>Sıralama</a>
+    <a href="/oyna.html" class="dock-play" aria-current="page"><span class="mark" aria-hidden="true"></span>Oyna</a>
+    <a href="/kurallar.html"><span class="mark" aria-hidden="true"></span>Kurallar</a>
+  </nav>
+  <script src="landing.js?v=5"></script>
+</body>
+</html>

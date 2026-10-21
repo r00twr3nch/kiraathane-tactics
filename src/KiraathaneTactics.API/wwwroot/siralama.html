@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Sıralama — Kıraathane Tactics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,680&family=Outfit:wght@400;500;650&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="landing.css?v=7" />
+</head>
+<body class="page-board">
+  <div class="room" aria-hidden="true">
+    <div class="lamp"></div>
+    <div class="haze"></div>
+  </div>
+  <header class="top">
+    <a class="brand" href="/index.html">Kıraathane</a>
+    <nav class="desk-nav" aria-label="Sayfa">
+      <a href="/siralama.html" aria-current="page">Sıralama</a>
+      <a href="/kurallar.html">Kurallar</a>
+      <a href="/oyna.html">Oyna</a>
+    </nav>
+  </header>
+  <main>
+    <section class="panel board-panel" aria-labelledby="board-title">
+      <div class="panel-head">
+        <h1 id="board-title">Duvar</h1>
+        <p>Bu tarayıcıda biten maçlar. Çaycıya karşı kazanmak da yazılır.</p>
+      </div>
+      <ol class="leaderboard" id="leaderboard"></ol>
+    </section>
+  </main>
+  <nav class="dock" aria-label="Masa">
+    <a href="/siralama.html" aria-current="page"><span class="mark" aria-hidden="true"></span>Sıralama</a>
+    <a href="/oyna.html" class="dock-play"><span class="mark" aria-hidden="true"></span>Oyna</a>
+    <a href="/kurallar.html"><span class="mark" aria-hidden="true"></span>Kurallar</a>
+  </nav>
+  <script src="landing.js?v=5"></script>
+</body>
+</html>

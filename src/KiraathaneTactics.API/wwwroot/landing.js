@@ -4,20 +4,23 @@ const queueCopy = document.querySelector("#queue-copy");
 const queueCode = document.querySelector("#queue-code");
 const findButton = document.querySelector("#find-rival");
 const botButton = document.querySelector("#play-bot");
+const hostButton = document.querySelector("#host-room");
+const hostCode = document.querySelector("#host-code");
 const board = document.querySelector("#leaderboard");
 
 const QUEUE_KEY = "kiraathane-open-table";
 const BOARD_KEY = "kiraathane-wall";
 let polling = null;
 
-renderBoard();
+if (board) renderBoard();
 window.addEventListener("storage", (event) => {
   if (event.key === QUEUE_KEY) claimWaitingTable();
 });
 
-findButton.addEventListener("click", () => findRival().catch(fail));
-botButton.addEventListener("click", () => playBot().catch(fail));
-document.querySelector("#queue-cancel").addEventListener("click", cancelQueue);
+findButton?.addEventListener("click", () => findRival().catch(fail));
+botButton?.addEventListener("click", () => playBot().catch(fail));
+hostButton?.addEventListener("click", () => hostRoom().catch(fail));
+document.querySelector("#queue-cancel")?.addEventListener("click", cancelQueue);
 
 function renderBoard() {
   const rows = readBoard();
@@ -63,6 +66,16 @@ async function watchTable(seat) {
   clearQueue();
   dialog.close();
   goPlay(seat);
+}
+
+async function hostRoom() {
+  setBusy(true);
+  note.textContent = "Masa kuruluyor.";
+  const seat = await api("/api/matches/rooms", { method: "POST" });
+  hostCode.hidden = false;
+  hostCode.textContent = seat.RoomCode;
+  note.textContent = "Kod hazır. Karşıdaki oturunca masa açılır.";
+  polling = window.setInterval(() => watchTable(seat).catch(fail), 2000);
 }
 
 async function playBot() {
@@ -114,8 +127,9 @@ function fail(error) {
 }
 
 function setBusy(busy) {
-  findButton.disabled = busy;
-  botButton.disabled = busy;
+  if (findButton) findButton.disabled = busy;
+  if (botButton) botButton.disabled = busy;
+  if (hostButton) hostButton.disabled = busy;
 }
 
 async function api(url, options = {}) {
