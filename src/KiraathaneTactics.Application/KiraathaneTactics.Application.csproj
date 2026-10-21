@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    APPLICATION KATMANI
+    İş mantığının (use-case) yaşadığı katman. Sadece Domain'e bağımlıdır.
+    Altyapıdan (EF Core, SQL, JWT) habersizdir; bunlara interface ile bakar.
+    İçerik: CQRS (Command/Query + Handler), Behavior'lar, DTO'lar, Validator'lar, soyut servis interface'leri.
+  -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\KiraathaneTactics.Domain\KiraathaneTactics.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <!-- Yalnızca EF Core ÇEKİRDEĞİ: async LINQ (ToListAsync/CountAsync) ve projeksiyon için.
+         Belirli bir veritabanı sağlayıcısı (SqlServer) burada DEĞİL, Infrastructure'dadır. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+  </ItemGroup>
+
+</Project>

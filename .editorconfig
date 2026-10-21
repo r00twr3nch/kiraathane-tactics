@@ -1,0 +1,47 @@
+root = true
+
+# Tüm dosyalar
+[*]
+charset = utf-8
+end_of_line = crlf
+insert_final_newline = true
+indent_style = space
+trim_trailing_whitespace = true
+
+[*.{cs,csproj,props,json,xml,config}]
+indent_size = 4
+
+[*.{json,yml,yaml}]
+indent_size = 2
+
+[*.cs]
+# Dil ve kod stili
+dotnet_sort_system_directives_first = true
+csharp_using_directive_placement = outside_namespace:warning
+csharp_style_namespace_declarations = file_scoped:warning
+csharp_prefer_braces = true:silent
+dotnet_style_qualification_for_field = false:warning
+dotnet_style_qualification_for_property = false:warning
+csharp_style_var_for_built_in_types = true:silent
+csharp_style_var_when_type_is_apparent = true:silent
+
+# --- Bilinçli olarak kapatılan analyzer kuralları (mimari tercihlerimizle çakışan, "stil" niteliğindekiler) ---
+# Result.Error / Error.None gibi isimler kasıtlı; domain dili Türkçe/İngilizce karışık değil.
+dotnet_diagnostic.CA1716.severity = none   # 'Error', 'next' gibi anahtar kelime adları
+dotnet_diagnostic.CA1711.severity = none   # 'Delegate' son ekli tip adı (RequestHandlerDelegate)
+dotnet_diagnostic.CA1848.severity = none   # LoggerMessage delegate zorunluluğu (şablon için fazla ayrıntı)
+dotnet_diagnostic.CA1873.severity = none   # log argümanı değerlendirme maliyeti
+dotnet_diagnostic.CA1062.severity = none   # public metotlarda null kontrolü zorunluluğu
+dotnet_diagnostic.CA2007.severity = none   # ConfigureAwait(false) (ASP.NET Core'da gereksiz)
+dotnet_diagnostic.CA1051.severity = none   # protected alan kullanımı (GenericRepository.Context)
+dotnet_diagnostic.CA1305.severity = none   # IFormatProvider (loglama)
+dotnet_diagnostic.CA1859.severity = none   # somut dönüş tipi önerisi (mikro-optimizasyon)
+dotnet_diagnostic.CA1000.severity = none   # generic tipte statik fabrika (ApiResponse<T>.Ok / Result<T>.Success deseni)
+
+# EF Core tarafından üretilen migration dosyaları: analiz etme
+[**/Migrations/*.cs]
+generated_code = true
+
+# Test projesi: alt çizgili test adlarına (Metot_Senaryo_Beklenen) izin ver
+[tests/**/*.cs]
+dotnet_diagnostic.CA1707.severity = none

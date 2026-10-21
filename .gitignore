@@ -1,0 +1,46 @@
+## .NET / Visual Studio
+bin/
+obj/
+out/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+build/
+publish/
+*.user
+*.suo
+*.userprefs
+.vs/
+.vscode/
+*.rsuser
+
+## Rider / JetBrains
+.idea/
+*.sln.iml
+
+## Test sonuçları
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+coverage/
+*.cobertura.xml
+
+## Loglar
+logs/
+*.log
+
+## Geliştirme veritabanı (SQL Server bu makinede başlamadığı için)
+*.db
+*.db-shm
+*.db-wal
+
+## Kullanıcıya özel / gizli yapılandırma
+appsettings.*.local.json
+secrets.json
+*.pfx
+.env
+
+## OS
+.DS_Store
+Thumbs.db

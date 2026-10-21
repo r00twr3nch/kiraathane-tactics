@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    INFRASTRUCTURE KATMANI
+    Application'daki soyutlamaların somut implementasyonları.
+    İçerik: EF Core DbContext + Configuration'lar, Repository implementasyonları,
+            JWT token üretimi, şifreleme, dış servisler.
+    Application'a bağımlıdır; Domain'i transitive olarak görür.
+  -->
+
+  <!-- DI'da AddAuthentication().AddJwtBearer() kullanabilmek için ASP.NET Core framework referansı -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\KiraathaneTactics.Application\KiraathaneTactics.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <PackageReference Include="BCrypt.Net-Next" />
+  </ItemGroup>
+
+</Project>

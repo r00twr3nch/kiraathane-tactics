@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    DOMAIN KATMANI
+    En iç katman. Hiçbir projeye/pakete bağımlı değildir.
+    İçerik: Entity'ler, Value Object'ler, Domain Event'ler, Enum'lar, Domain kuralları/exception'ları.
+    Ortak ayarlar (TargetFramework, Nullable, ImplicitUsings) Directory.Build.props'tan gelir.
+  -->
+
+</Project>

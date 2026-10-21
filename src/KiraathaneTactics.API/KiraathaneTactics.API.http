@@ -1,0 +1,56 @@
+@host = https://localhost:7060
+@token = BURAYA_LOGIN_DEN_GELEN_TOKEN
+
+### Kayıt ol (otomatik token döner)
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "kullanici@test.com",
+  "password": "Password1!",
+  "fullName": "Test Kullanıcı"
+}
+
+### Giriş yap (seed admin: admin@kiraathane.local / Admin123!)
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@kiraathane.local",
+  "password": "Admin123!"
+}
+
+### Ürün listele (sayfalı, anonim)
+GET {{host}}/api/products?pageNumber=1&pageSize=10&search=
+
+### Ürün oluştur (token gerekli)
+POST {{host}}/api/products
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Örnek Ürün",
+  "description": "Açıklama",
+  "price": 99.90,
+  "stockQuantity": 25
+}
+
+### Tek ürün getir
+GET {{host}}/api/products/00000000-0000-0000-0000-000000000000
+
+### Ürün güncelle (token gerekli)
+PUT {{host}}/api/products/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "name": "Güncel Ürün",
+  "description": "Yeni açıklama",
+  "price": 149.90,
+  "stockQuantity": 10
+}
+
+### Ürün sil (yalnızca Admin)
+DELETE {{host}}/api/products/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{token}}

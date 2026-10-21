@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/KiraathaneTactics.API/KiraathaneTactics.API.csproj" />
+    <Project Path="src/KiraathaneTactics.Application/KiraathaneTactics.Application.csproj" />
+    <Project Path="src/KiraathaneTactics.Domain/KiraathaneTactics.Domain.csproj" />
+    <Project Path="src/KiraathaneTactics.Infrastructure/KiraathaneTactics.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/KiraathaneTactics.Application.UnitTests/KiraathaneTactics.Application.UnitTests.csproj" />
+    <Project Path="tests/KiraathaneTactics.Domain.UnitTests/KiraathaneTactics.Domain.UnitTests.csproj" />
+  </Folder>
+</Solution>

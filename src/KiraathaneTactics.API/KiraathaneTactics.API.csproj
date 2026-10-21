@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!--
+    API (PRESENTATION) KATMANI
+    Dış dünyaya açılan kapı. Controller'lar, middleware, DI kompozisyonu (composition root).
+    Infrastructure ve Application'a bağımlıdır. İş mantığı içermez; isteği CQRS'e devreder.
+  -->
+
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" />
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="Serilog.Sinks.Console" />
+    <PackageReference Include="Serilog.Sinks.File" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\KiraathaneTactics.Infrastructure\KiraathaneTactics.Infrastructure.csproj" />
+    <ProjectReference Include="..\KiraathaneTactics.Application\KiraathaneTactics.Application.csproj" />
+  </ItemGroup>
+
+</Project>
