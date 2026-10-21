@@ -156,19 +156,45 @@ body {
 }
 .stage {
   position: relative;
-  width: min(340px, 86vw);
-  height: 210px;
+  width: min(420px, 92vw);
+  height: 280px;
+  margin-bottom: 22px;
   border-radius: 28px;
   background:
-    radial-gradient(circle at 50% 0%, rgba(255, 236, 205, 0.16), transparent 48%),
-    linear-gradient(180deg, #275443, var(--felt));
-  box-shadow: inset 0 0 0 8px #6a4128, inset 0 0 0 12px #3e2416, 0 16px 0 #2a170e;
+    radial-gradient(ellipse at 50% 0%, rgba(255, 226, 170, 0.28), transparent 42%),
+    radial-gradient(circle at 50% 120%, rgba(0, 0, 0, 0.28), transparent 46%),
+    linear-gradient(180deg, #2f6652, var(--felt) 70%);
+  box-shadow:
+    inset 0 0 0 8px #6a4128,
+    inset 0 0 0 12px #3e2416,
+    inset 0 18px 24px rgba(255, 236, 205, 0.08),
+    0 16px 0 #2a170e;
 }
-.stage .cup { position: absolute; width: 86px; height: 104px; }
-.stage .cup:nth-child(1) { top: 28px; left: 22px; transform: rotate(-8deg); }
-.stage .cup:nth-child(2) { top: 78px; left: 124px; }
-.stage .cup:nth-child(3) { top: 18px; right: 18px; transform: rotate(7deg); }
+.stage .prop {
+  position: absolute;
+  width: 22%;
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 7px 2px rgba(8, 4, 2, 0.42));
+}
+.stage .prop:nth-child(1) { top: 4%; left: 4%; width: 18%; }
+.stage .prop:nth-child(2) { top: 6%; left: 34%; width: 24%; }
+.stage .prop:nth-child(3) { top: 2%; left: 66%; width: 26%; }
+.stage .prop:nth-child(4) { top: 36%; left: 2%; width: 42%; }
+.stage .prop:nth-child(5) { top: 40%; left: 48%; width: 40%; }
+.stage .prop:nth-child(6) { top: 68%; left: 4%; width: 28%; }
+.stage .prop:nth-child(7) { top: 66%; left: 32%; width: 30%; }
+.stage .prop:nth-child(8) { top: 64%; left: 66%; width: 26%; }
+@media (hover: hover) and (pointer: fine) {
+  .stage .prop { transition: transform 220ms ease; }
+  .stage .prop:hover { transform: translateY(-6px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage .prop { animation: none; }
+}
 .play-slab {
+  position: relative;
+  z-index: 2;
   min-width: min(280px, 78vw);
   min-height: 64px;
   display: grid;
@@ -486,9 +512,21 @@ dialog menu { display: flex; justify-content: flex-end; margin: 18px 0 0; paddin
     gap: 10px;
     padding: 8px 0 calc(96px + env(safe-area-inset-bottom));
   }
-  .title-screen h1 { font-size: clamp(2.7rem, 13vw, 3.6rem); }
-  .stage { flex: 1; width: 100%; height: auto; min-height: 150px; }
-  .play-slab { width: 100%; }
+  .title-screen h1 { font-size: clamp(2.4rem, 11vw, 3.2rem); }
+  .stage {
+    flex: 1 1 auto;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    max-height: 46dvh;
+    margin-bottom: 18px;
+  }
+  .stage .prop { width: 24%; height: 24%; }
+  .play-slab {
+    flex: 0 0 auto;
+    width: 100%;
+    margin-top: 4px;
+  }
   .dock {
     position: fixed;
     z-index: 5;
