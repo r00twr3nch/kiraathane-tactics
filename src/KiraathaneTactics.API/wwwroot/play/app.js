@@ -65,6 +65,37 @@ async function hostRoom() {
   setStatus("Kod hazır. İlk sıra yazı turayla belli olur.");
 }
 
+async function restartMatch() {
+  const curtain = document.querySelector("#curtain");
+  const bot = state.bot;
+  state.selectedTileId = null;
+  state.selectedPerk = null;
+  state.previousOwners = new Map();
+  if (bot) {
+    const light = await api("/api/matches/rooms?openingSide=Light", { method: "POST" });
+    const dark = await api("/api/matches/rooms/join", {
+      method: "POST",
+      body: JSON.stringify({ roomCode: light.RoomCode })
+    });
+    state.seat = light;
+    state.bot = {
+      matchId: light.MatchId,
+      seatToken: dark.SeatToken,
+      side: dark.Side,
+      level: bot.level,
+      catalog: bot.catalog
+    };
+    showCode(light.RoomCode);
+    await loadMatch(light.MatchId);
+    curtain.hidden = true;
+    const ranks = { cirak: "Çırak", kalfa: "Kalfa", usta: "Usta" };
+    setStatus(`${ranks[bot.level] || "Kalfa"} çaycı yeni fincanları dizdi. İlk yudum sende.`);
+    return;
+  }
+  curtain.hidden = true;
+  await hostRoom();
+}
+
 async function joinRoom(code) {
   state.seat = await api("/api/matches/rooms/join", {
     method: "POST",
@@ -214,8 +245,12 @@ function render() {
   const cells = [...match.Cells].sort((a, b) => a.Row - b.Row || a.Column - b.Column);
   boardEl.replaceChildren(...cells.map((cell) => renderCell(cell)));
   renderCatalog();
+  const mine = state.seat?.Side === "Dark" ? match.DarkPerkCharges : match.LightPerkCharges;
   document.querySelectorAll(".perk").forEach((button) => {
     button.classList.toggle("selected", button.dataset.perk === state.selectedPerk);
+    const count = button.querySelector("em");
+    if (count) count.textContent = `×${mine}`;
+    button.disabled = mine === 0 || match.Status !== "InProgress";
   });
 }
 
@@ -436,9 +471,10 @@ function showCurtain(match) {
   document.querySelector("#curtain-score").textContent = `${match.LightScore} – ${match.DarkScore}`;
   const again = document.querySelector("#curtain-again");
   again.onclick = () => {
-    curtain.hidden = true;
-    if (state.bot) window.location.href = "/index.html";
-    else hostRoom().catch((error) => setStatus(error.message, true));
+    again.disabled = true;
+    restartMatch()
+      .catch((error) => setStatus(error.message, true))
+      .finally(() => { again.disabled = false; });
   };
   window.setTimeout(() => again.focus(), reducedMotion() ? 0 : 540);
 }
@@ -476,11 +512,13 @@ function paintSide(side, score, charges, active) {
   paintClocks();
   document.querySelector(`#side-${side}`).classList.toggle("active", active);
   const holder = document.querySelector(`#charges-${side}`);
+  const name = side === "light" ? "Açık" : "Koyu";
+  holder.setAttribute("aria-label", `${name} joker hakkı, ${charges} kaldı`);
   holder.replaceChildren(...Array.from({ length: 3 }, (_, index) => {
     const mark = document.createElement("i");
     if (index >= charges) mark.className = "spent";
     return mark;
-  }));
+  }), Object.assign(document.createElement("b"), { textContent: String(charges) }));
 }
 
 function paintClocks() {
