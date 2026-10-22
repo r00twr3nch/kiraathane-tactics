@@ -102,7 +102,7 @@ async function playBot() {
 function goPlay(seat, versusBot) {
   sessionStorage.setItem("kiraathane-seat", JSON.stringify(seat));
   const bot = versusBot ? "&bot=1" : "";
-  window.location.href = `/play/index.html?v=14&from=landing${bot}`;
+  window.location.href = `/play/index.html?v=26&from=landing${bot}`;
 }
 
 function cancelQueue() {

@@ -29,67 +29,71 @@ body {
   position: fixed;
   inset: 0;
   z-index: -2;
-  background:
-    radial-gradient(ellipse at 50% 8%, rgba(255, 214, 140, 0.28), transparent 34%),
-    linear-gradient(180deg, #3a2418 0%, #1a100c 42%, #0c0806 100%);
   overflow: hidden;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 214, 150, 0.2), transparent 32%),
+    linear-gradient(180deg, #3a2418 0%, #140c08 46%, #0c0705 100%);
 }
-.lamp {
+.cafe .glow {
   position: absolute;
-  top: -40px;
   left: 50%;
-  width: 280px;
-  height: 180px;
+  top: -8%;
+  width: min(520px, 130vw);
+  height: 340px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(255, 214, 150, 0.34), rgba(215, 177, 90, 0.08) 46%, transparent 72%);
   transform: translateX(-50%);
-  background: radial-gradient(ellipse at 50% 100%, rgba(255, 214, 140, 0.55), transparent 70%);
-  filter: blur(2px);
+  animation: lamp 9s ease-in-out infinite;
 }
-.shelf {
+.table-wood {
   position: absolute;
-  top: 12%;
-  left: 6%;
-  width: min(280px, 28vw);
-  height: 18px;
-  border-radius: 4px;
-  background: linear-gradient(180deg, #6a4128, #2a170e);
-  box-shadow: 0 16px 0 #24150e, 0 18px 18px rgba(0, 0, 0, 0.4);
-}
-.shelf::before, .shelf::after {
-  content: "";
-  position: absolute;
-  bottom: 18px;
-  width: 34px;
-  height: 48px;
-  border-radius: 6px 6px 2px 2px;
-  background: linear-gradient(180deg, #f4e2c4, #c4553a 40%, #6b2a22);
-  box-shadow: 46px 8px 0 -6px #1c120b, 92px 0 0 -4px #d7b15a;
-}
-.shelf::after { left: 150px; height: 36px; bottom: 18px; }
-.window {
-  position: absolute;
-  top: 10%;
-  right: 7%;
-  width: min(180px, 22vw);
-  height: 140px;
-  border-radius: 8px;
+  left: 50%;
+  top: 42%;
+  width: min(430px, 108vw);
+  aspect-ratio: 0.92;
+  border-radius: 46px;
   background:
-    linear-gradient(90deg, transparent 48%, rgba(28, 18, 11, 0.55) 48% 52%, transparent 52%),
-    linear-gradient(180deg, #f0d9a8, #c47a4a 70%);
-  box-shadow: inset 0 0 0 10px #2a170e, 0 18px 30px rgba(0, 0, 0, 0.35);
-  opacity: 0.8;
+    repeating-linear-gradient(90deg, #6a4128 0 18px, #4a2c1a 18px 22px, #7a4e30 22px 40px);
+  box-shadow:
+    inset 0 0 0 14px #2a170e,
+    inset 0 0 0 18px rgba(215, 177, 90, 0.45),
+    0 30px 50px rgba(0, 0, 0, 0.45);
+  transform: translate(-50%, -50%);
 }
-.floor {
+.felt-board {
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 28%;
+  inset: 28px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  padding: 14px;
+  border-radius: 28px;
   background:
-    repeating-linear-gradient(90deg, rgba(90, 48, 24, 0.35) 0 14px, rgba(28, 16, 10, 0.2) 14px 28px),
-    linear-gradient(180deg, #3d2416, #1a100c);
-  transform: perspective(600px) rotateX(28deg);
-  transform-origin: bottom;
+    radial-gradient(circle at 28% 18%, rgba(255, 255, 255, 0.1), transparent 30%),
+    linear-gradient(165deg, #2a6654, #16382d 72%);
+  box-shadow: inset 0 0 0 1px rgba(215, 177, 90, 0.35);
+  animation: felt-breathe 11s ease-in-out infinite;
 }
+.felt-board i {
+  border-radius: 10px;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.07), transparent 42%),
+    #1c4638;
+  box-shadow: inset 0 0 0 1px rgba(215, 177, 90, 0.22);
+}
+.cafe .wisp {
+  position: absolute;
+  bottom: 18%;
+  width: 2px;
+  height: 90px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, transparent, rgba(246, 239, 226, 0.45), transparent);
+  opacity: 0;
+  animation: wisp 8s ease-in-out infinite;
+}
+.cafe .wisp.a { left: 28%; animation-delay: 0s; }
+.cafe .wisp.b { left: 50%; height: 120px; animation-delay: -2.6s; }
+.cafe .wisp.c { left: 72%; animation-delay: -5.2s; }
 .grain {
   position: fixed;
   inset: 0;
@@ -141,23 +145,31 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 18px;
+  gap: 22px;
   text-align: center;
 }
+.cover { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .poster-mark {
   margin: 0;
   color: var(--brass);
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.22em;
+  font-size: 0.78rem;
+}
+.cover-line {
+  margin: 4px 0 0;
+  color: #eadcc6;
+  font-size: 1rem;
+  letter-spacing: 0.01em;
 }
 .title-screen h1 {
-  font-size: clamp(3.4rem, 9vw, 6rem);
-  text-shadow: 0 10px 0 rgba(0, 0, 0, 0.35);
+  font-size: clamp(3.2rem, 8vw, 5.2rem);
+  text-shadow: 0 8px 0 rgba(0, 0, 0, 0.28);
 }
-.orbit {
+.hand, .orbit {
   position: relative;
-  width: min(340px, 86vw);
-  height: 210px;
+  width: min(360px, 92vw);
+  height: 168px;
   perspective: 900px;
 }
 .tile {
@@ -407,14 +419,18 @@ h1 {
   font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 560;
 }
-.room {
+.page-play .room, .page-board .room, .page-rules .room {
   position: fixed;
   inset: 0;
   z-index: -2;
+  width: auto;
+  height: auto;
+  clip-path: none;
   background:
     radial-gradient(ellipse at 50% 0%, rgba(255, 214, 140, 0.22), transparent 36%),
     linear-gradient(180deg, #3a2418 0%, #140c08 100%);
 }
+.page-play .room::before, .page-board .room::before, .page-rules .room::before { display: none; }
 .page-play .haze, .page-board .haze, .page-rules .haze {
   position: absolute;
   inset: auto 0 0;
@@ -531,28 +547,47 @@ dialog menu { display: flex; justify-content: flex-end; margin: 18px 0 0; paddin
   .desk-nav { display: none; }
   .top { padding: 8px 0 4px; }
   .brand { font-size: 1.35rem; }
+  .top { display: none; }
   .title-screen {
     flex: 1;
     min-height: 0;
-    width: min(460px, calc(100% - 24px));
-    justify-content: space-between;
-    gap: 10px;
-    padding: 8px 0 calc(96px + env(safe-area-inset-bottom));
+    width: 100%;
+    justify-content: flex-end;
+    gap: 0;
+    padding:
+      calc(18px + env(safe-area-inset-top))
+      20px
+      calc(108px + env(safe-area-inset-bottom));
   }
-  .title-screen h1 { font-size: clamp(2.4rem, 11vw, 3.2rem); }
-  .orbit {
-    flex: 0 1 180px;
-    width: min(320px, 100%);
-    height: 180px;
-    min-height: 150px;
+  .cover { margin-top: auto; gap: 6px; }
+  .poster-mark { font-size: 0.72rem; letter-spacing: 0.28em; }
+  .title-screen h1 {
+    font-size: clamp(2.7rem, 12vw, 3.35rem);
+    letter-spacing: -0.045em;
+    text-shadow: 0 6px 0 rgba(0, 0, 0, 0.35);
   }
-  .tile { --w: 88px; height: 108px; }
-  .tile .front b { font-size: 1.15rem; }
-  .tile .front small { font-size: 1.5rem; }
+  .cover-line { margin: 2px 0 0; font-size: 0.95rem; color: #f3e6cf; }
+  .hand {
+    flex: 0 0 auto;
+    width: min(340px, 100%);
+    height: 132px;
+    margin: 22px 0 18px;
+  }
+  .tile { --w: 92px; height: 112px; }
+  .tile.tea { top: 16px; }
+  .tile.coffee { top: 0; }
+  .tile.knight { top: 20px; }
+  .tile .front { padding: 12px; border-radius: 18px; }
+  .tile .front b { font-size: 1.05rem; }
+  .tile .front small { font-size: 1.55rem; }
   .play-slab {
     flex: 0 0 auto;
-    width: 100%;
-    margin-top: 4px;
+    width: min(100%, 340px);
+    min-height: 58px;
+    margin: 0 0 22px;
+    border-radius: 999px;
+    font-size: 1.45rem;
+    box-shadow: inset 0 1px 0 #fff6d4, 0 5px 0 #6d501c;
   }
   .dock {
     position: fixed;
@@ -614,8 +649,7 @@ dialog menu { display: flex; justify-content: flex-end; margin: 18px 0 0; paddin
     stroke-linecap: round;
     stroke-linejoin: round;
   }
-  .shelf, .window { display: none; }
-  .floor { height: 18%; transform: none; }
+  .cafe .wisp { bottom: 28%; }
   .panel {
     flex: 1;
     min-height: 0;
@@ -660,10 +694,24 @@ dialog menu { display: flex; justify-content: flex-end; margin: 18px 0 0; paddin
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .steam, .table-3d { animation: none; transform: none; }
+  .steam, .table-3d, .cafe .glow, .cafe .wisp, .felt-board { animation: none; }
+  .cafe .wisp { opacity: 0.25; }
 }
 
 @keyframes steam {
   0%, 100% { transform: translateZ(60px) translateY(0); opacity: 0.2; }
   50% { transform: translateZ(60px) translateY(-16px); opacity: 0.8; }
+}
+@keyframes felt-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.015); }
+}
+@keyframes lamp {
+  0%, 100% { opacity: 0.72; transform: translateX(-50%) scale(1); }
+  50% { opacity: 1; transform: translateX(-50%) scale(1.08); }
+}
+@keyframes wisp {
+  0% { opacity: 0; transform: translateY(24px) scaleY(0.7); }
+  35% { opacity: 0.55; }
+  100% { opacity: 0; transform: translateY(-90px) scaleY(1.15); }
 }

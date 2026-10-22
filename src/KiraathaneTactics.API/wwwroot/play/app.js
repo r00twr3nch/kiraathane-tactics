@@ -144,12 +144,16 @@ function moveDrag(event) {
     drag.moved = true;
     event.preventDefault();
     drag.origin.classList.add("dragging");
-    drag.ghost = drag.origin.querySelector(".cup").cloneNode(true);
+    const source = drag.origin.querySelector(".cup");
+    const box = source.getBoundingClientRect();
+    drag.ghost = source.cloneNode(true);
     drag.ghost.classList.add("drag-ghost");
+    drag.liftX = event.clientX - (box.left + box.width / 2);
+    drag.liftY = event.clientY - (box.top + box.height / 2);
     document.body.append(drag.ghost);
   }
-  moveGhost(event.clientX, event.clientY);
-  const cell = document.elementFromPoint(event.clientX, event.clientY)?.closest(".cell");
+  moveGhost(event.clientX - drag.liftX, event.clientY - drag.liftY - 120);
+  const cell = cellUnder(event.clientX, event.clientY);
   document.querySelectorAll(".cell.drop-target").forEach((item) => item.classList.remove("drop-target"));
   if (cell && !cell.classList.contains("filled")) cell.classList.add("drop-target");
 }
@@ -158,12 +162,21 @@ function moveGhost(x, y) {
   drag.ghost.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
 }
 
+function cellUnder(x, y) {
+  const ghost = drag.ghost;
+  const hidden = ghost?.style.visibility;
+  if (ghost) ghost.style.visibility = "hidden";
+  const cell = document.elementFromPoint(x, y)?.closest(".cell");
+  if (ghost) ghost.style.visibility = hidden || "";
+  return cell;
+}
+
 function endDrag(event) {
   if (event.pointerId !== drag.pointerId) return;
   document.removeEventListener("pointermove", moveDrag);
   document.removeEventListener("pointerup", endDrag);
   document.removeEventListener("pointercancel", endDrag);
-  const cell = document.elementFromPoint(event.clientX, event.clientY)?.closest(".cell");
+  const cell = cellUnder(event.clientX, event.clientY);
   document.querySelectorAll(".cell.drop-target").forEach((item) => item.classList.remove("drop-target"));
   drag.ghost?.remove();
   drag.origin.classList.remove("dragging");
@@ -176,6 +189,7 @@ function endDrag(event) {
 
 function render() {
   const match = state.match;
+  document.body.classList.toggle("in-match", Boolean(match) && match.Status !== "Waiting");
   paintSide("light", match.LightScore, match.LightPerkCharges, match.CurrentTurn === "Light");
   paintSide("dark", match.DarkScore, match.DarkPerkCharges, match.CurrentTurn === "Dark");
   document.querySelector("#turn-pill").textContent = turnLabel(match);

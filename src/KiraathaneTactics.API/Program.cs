@@ -44,9 +44,9 @@ try
         app.MapGet("/play", () => Results.Redirect("/play/index.html")).ExcludeFromDescription();
     }
 
-    // Otomatik migrate + seed: YALNIZCA Development.
-    // Test/Canlı ortamlarda migration'lar CI/CD ile (dotnet ef database update) uygulanır.
-    if (app.Environment.IsDevelopment())
+    // Yerel canlıda da SQLite dosyası migrate + seed edilir.
+    // Gerçek bir sunucuda migration CI/CD ile uygulanmalıdır.
+    if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
     {
         await app.InitializeDatabaseAsync();
 
