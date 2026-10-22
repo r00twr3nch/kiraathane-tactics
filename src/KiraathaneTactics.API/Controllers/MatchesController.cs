@@ -1,3 +1,4 @@
+using KiraathaneTactics.Application.Common.Interfaces;
 using KiraathaneTactics.Application.Common.Messaging;
 using KiraathaneTactics.Application.Common.Models;
 using KiraathaneTactics.Application.Features.Matches.Common;
@@ -17,7 +18,7 @@ namespace KiraathaneTactics.API.Controllers;
 /// Kıraathane Tactics maçları. Phase 1 yerel oturumdur; kimlik doğrulaması yoktur.
 /// </summary>
 [AllowAnonymous]
-public sealed class MatchesController(ISender sender) : ApiControllerBase(sender)
+public sealed class MatchesController(ISender sender, IOnlineQueue queue) : ApiControllerBase(sender)
 {
     /// <summary>Oda kodu üretir ve Light koltuğunu ayırır. İlk sıra yazı turadır; bot masasında Light başlar.</summary>
     [HttpPost("rooms")]
@@ -26,6 +27,44 @@ public sealed class MatchesController(ISender sender) : ApiControllerBase(sender
     {
         var result = await Sender.Send(new OpenRoomCommand(openingSide), cancellationToken);
         return HandleCreated(result, nameof(GetState), new { id = result.IsSuccess ? result.Value.MatchId : Guid.Empty });
+    }
+
+    /// <summary>Boş online masa varsa koyu koltuğa oturtur. Yoksa açık koltuğu kuyruğa yazar.</summary>
+    [HttpPost("queue")]
+    [ProducesResponseType(typeof(ApiResponse<SeatDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<SeatDto>), StatusCodes.Status202Accepted)]
+    public async Task<IActionResult> Queue(CancellationToken cancellationToken)
+    {
+        var claim = await queue.TakeOrOfferAsync(async () =>
+        {
+            var opened = await Sender.Send(new OpenRoomCommand(null), cancellationToken);
+            if (opened.IsFailure)
+                throw new InvalidOperationException(opened.Error.Description);
+
+            var seat = opened.Value;
+            return new OnlineSeat(seat.MatchId, seat.RoomCode, seat.Side.ToString(), seat.SeatToken);
+        }, cancellationToken);
+
+        if (claim.Waiting)
+        {
+            var light = new SeatDto(claim.Seat.MatchId, claim.Seat.RoomCode, PlayerSide.Light, claim.Seat.SeatToken);
+            return Accepted(ApiResponse<SeatDto>.Ok(light, StatusCodes.Status202Accepted, "Sıradasın."));
+        }
+
+        var joined = await Sender.Send(new JoinRoomCommand(claim.Seat.RoomCode), cancellationToken);
+        if (joined.IsFailure)
+            return HandleResult(joined);
+
+        return Ok(ApiResponse<SeatDto>.Ok(joined.Value));
+    }
+
+    /// <summary>Açık koltuğu online kuyruktan düşürür. Rakip çoktan oturduysa masaya dokunmaz.</summary>
+    [HttpDelete("queue/{id:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    public IActionResult LeaveQueue(Guid id)
+    {
+        queue.Release(id);
+        return Ok(ApiResponse.Ok(message: "Arama bırakıldı."));
     }
 
     /// <summary>Oda koduyla Dark koltuğuna oturur ve maçı başlatır.</summary>

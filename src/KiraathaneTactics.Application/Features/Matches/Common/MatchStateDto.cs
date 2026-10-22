@@ -36,6 +36,7 @@ public sealed record MatchStateDto(
         int LightSecondsRemaining,
         int DarkSecondsRemaining,
         DateTimeOffset? TurnDeadlineUtc,
+        bool Walkover,
         IReadOnlyList<CellDto> Cells,
         IReadOnlyList<MatchEventDto> Events,
         IReadOnlyList<TileStockDto> Stock);
@@ -58,6 +59,7 @@ public static class MatchMapping
                 match.SecondsRemaining(PlayerSide.Light, now),
                 match.SecondsRemaining(PlayerSide.Dark, now),
                 match.TurnDeadlineUtc,
+                match.Walkover,
                 match.Cells
             .OrderBy(c => c.Row)
             .ThenBy(c => c.Column)
@@ -103,6 +105,9 @@ public static class MatchMapping
                 TileRevealed revealed => new MatchEventDto(
                     "TileRevealed",
                     $"{revealed.Side} ({revealed.Position.Row},{revealed.Position.Column})"),
+                RivalLeft left => new MatchEventDto(
+                    "RivalLeft",
+                    $"{left.Winner}"),
                 _ => new MatchEventDto(domainEvent.GetType().Name, string.Empty)
     };
 }

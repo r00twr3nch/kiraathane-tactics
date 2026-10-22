@@ -22,13 +22,20 @@ public static class DependencyInjection
         services.AddControllers()
             .AddJsonOptions(options =>
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
-        services.AddSignalR()
+        services.AddSignalR(options =>
+            {
+                // Sessiz kopuş varsayılan 30 saniyede fark edilir. Kapıyı çeken
+                // rakip bu kadar bekletilmez; yeniden bağlanma mühleti hub'da ayrıca durur.
+                options.ClientTimeoutInterval = TimeSpan.FromSeconds(15);
+                options.KeepAliveInterval = TimeSpan.FromSeconds(5);
+            })
             .AddJsonProtocol(options =>
             {
                 options.PayloadSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
                 options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             });
         services.AddScoped<IMatchNotifier, SignalRMatchNotifier>();
+        services.AddSingleton<IOnlineQueue, OnlineQueue>();
 
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserService, CurrentUserService>();

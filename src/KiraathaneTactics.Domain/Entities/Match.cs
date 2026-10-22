@@ -39,6 +39,8 @@ public class Match : AuditableEntity
         public DateTimeOffset? TurnDeadlineUtc { get; private set; }
         public int LightTimePenaltySeconds { get; private set; }
         public int DarkTimePenaltySeconds { get; private set; }
+        /// <summary>Online maçta bir taraf kapıyı çektiyse true. Win perdesi bunu okur.</summary>
+        public bool Walkover { get; private set; }
 
     public IReadOnlyCollection<BoardCell> Cells => _cells;
     public IReadOnlyCollection<MatchEvent> DomainEvents => _events;
@@ -115,6 +117,25 @@ public class Match : AuditableEntity
             Status = MatchStatus.InProgress;
             StartedAt = DateTimeOffset.UtcNow;
             TurnDeadlineUtc = StartedAt.Value.AddSeconds(45);
+        }
+
+        /// <summary>
+        /// Online masada bir taraf kapıyı çekince kalan taraf kazanır.
+        /// Çaycı masasında ve tek ekranlı oyunda çağrılmaz.
+        /// </summary>
+        public void AwardWalkover(PlayerSide winner)
+        {
+            if (Status is MatchStatus.Completed or MatchStatus.Draw)
+                return;
+
+            if (Status == MatchStatus.Waiting)
+                throw new DomainException("Masa daha kurulmadı.", "Match.NotStarted");
+
+            Status = MatchStatus.Completed;
+            Winner = winner;
+            Walkover = true;
+            TurnDeadlineUtc = null;
+            _events.Add(new RivalLeft(Id, winner));
         }
 
         public void ApplyClock(DateTimeOffset utcNow)

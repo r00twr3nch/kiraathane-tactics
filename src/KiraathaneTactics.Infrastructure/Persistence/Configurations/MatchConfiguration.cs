@@ -19,6 +19,7 @@ public sealed class MatchConfiguration : IEntityTypeConfiguration<Match>
                 builder.HasIndex(m => m.RoomCode).IsUnique();
                 builder.Property(m => m.LightSeatToken).HasMaxLength(64);
                 builder.Property(m => m.DarkSeatToken).HasMaxLength(64);
+                builder.Property(m => m.Walkover).HasDefaultValue(false);
 
                 builder.Ignore(m => m.Cells);
         builder.Ignore(m => m.DomainEvents);

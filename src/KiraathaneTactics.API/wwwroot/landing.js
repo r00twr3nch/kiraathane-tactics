@@ -8,14 +8,11 @@ const hostButton = document.querySelector("#host-room");
 const hostCode = document.querySelector("#host-code");
 const board = document.querySelector("#leaderboard");
 
-const QUEUE_KEY = "kiraathane-open-table";
 const BOARD_KEY = "kiraathane-wall";
 let polling = null;
+let offered = null;
 
 if (board) renderBoard();
-window.addEventListener("storage", (event) => {
-  if (event.key === QUEUE_KEY) claimWaitingTable();
-});
 
 findButton?.addEventListener("click", () => findRival().catch(fail));
 botButton?.addEventListener("click", () => playBot().catch(fail));
@@ -36,35 +33,40 @@ function renderBoard() {
 }
 
 async function findRival() {
-  const waiting = readQueue();
-  if (waiting && Date.now() - waiting.openedAt < 90_000) {
-    setBusy(true);
-    note.textContent = "Boş masa bulundu, oturuluyor.";
-    const seat = await api("/api/matches/rooms/join", {
-      method: "POST",
-      body: JSON.stringify({ roomCode: waiting.roomCode })
-    });
-    clearQueue();
-    goPlay(seat);
+  setBusy(true);
+  note.textContent = "Boş masa aranıyor.";
+  const response = await fetch("/api/matches/queue", {
+    method: "POST",
+    headers: { Accept: "application/json" }
+  });
+  const body = await response.json();
+  if (!response.ok || body.success === false) {
+    const errors = body.errors ?? body.Errors;
+    throw new Error(errors?.[0]?.message || errors?.[0]?.Message || body.message || body.Message || "Masa cevap vermedi.");
+  }
+
+  const seat = normalize(body.data ?? body.Data);
+  if (response.status === 202) {
+    offered = seat;
+    note.textContent = "Sıradasın. Rakip oturunca masa açılır.";
+    queueCopy.textContent = "Rakip aranıyor. Başka bir telefon da aynı düğmeye basarsa masaya oturur.";
+    queueCode.hidden = true;
+    if (typeof dialog.showModal === "function") dialog.showModal();
+    polling = window.setInterval(() => watchTable(seat).catch(fail), 1500);
     return;
   }
 
-  setBusy(true);
-  const seat = await api("/api/matches/rooms", { method: "POST" });
-  writeQueue({ roomCode: seat.RoomCode, matchId: seat.MatchId, openedAt: Date.now() });
-  queueCopy.textContent = "Rakip aranıyor. Başka bir sekme ya da telefon aynı düğmeye basarsa masaya oturur.";
-  queueCode.hidden = false;
-  queueCode.textContent = seat.RoomCode;
-  if (typeof dialog.showModal === "function") dialog.showModal();
-  polling = window.setInterval(() => watchTable(seat).catch(fail), 2000);
+  note.textContent = "Boş masa bulundu, oturuluyor.";
+  if (dialog.open) dialog.close();
+  goPlay(seat);
 }
 
 async function watchTable(seat) {
   const match = await api(`/api/matches/${seat.MatchId}`);
   if (match.Status === "Waiting") return;
   window.clearInterval(polling);
-  clearQueue();
-  dialog.close();
+  offered = null;
+  if (dialog.open) dialog.close();
   goPlay(seat);
 }
 
@@ -107,16 +109,13 @@ function goPlay(seat, versusBot) {
 
 function cancelQueue() {
   window.clearInterval(polling);
-  clearQueue();
+  const seat = offered;
+  offered = null;
   setBusy(false);
   note.textContent = "Arama bırakıldı.";
-}
-
-function claimWaitingTable() {
-  if (dialog.open) return;
-  const waiting = readQueue();
-  if (!waiting) return;
-  note.textContent = `${waiting.roomCode} masası hâlâ boş.`;
+  if (dialog.open) dialog.close();
+  if (!seat?.MatchId) return;
+  fetch(`/api/matches/queue/${seat.MatchId}`, { method: "DELETE" }).catch(() => {});
 }
 
 function fail(error) {
@@ -156,12 +155,6 @@ function normalize(value) {
   }));
 }
 
-function readQueue() {
-  try { return JSON.parse(localStorage.getItem(QUEUE_KEY) || "null"); }
-  catch { return null; }
-}
-function writeQueue(value) { localStorage.setItem(QUEUE_KEY, JSON.stringify(value)); }
-function clearQueue() { localStorage.removeItem(QUEUE_KEY); }
 function readBoard() {
   try { return JSON.parse(localStorage.getItem(BOARD_KEY) || "[]"); }
   catch { return []; }

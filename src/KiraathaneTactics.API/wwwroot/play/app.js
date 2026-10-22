@@ -126,8 +126,24 @@ async function connect(matchId) {
   if (state.connection) await state.connection.stop();
   const connection = new signalR.HubConnectionBuilder().withUrl("/hubs/matches").withAutomaticReconnect().build();
   connection.on("state", (next) => applyMatch(normalize(next), false));
+  connection.onreconnected(async () => {
+    if (!state.seat || state.bot) return;
+    await connection.invoke("Sit", state.seat.MatchId, state.seat.SeatToken);
+  });
+  connection.onclose(() => {
+    state.connection = null;
+  });
+  window.addEventListener("pagehide", () => {
+    if (!state.connection || !state.seat || state.bot) return;
+    const over = state.match && (state.match.Status === "Completed" || state.match.Status === "Draw");
+    if (over) return;
+    state.connection.invoke("Leave", state.seat.MatchId, state.seat.SeatToken).catch(() => {});
+  });
   await connection.start();
-  await connection.invoke("JoinMatch", matchId);
+  if (state.seat && !state.bot)
+    await connection.invoke("Sit", matchId, state.seat.SeatToken);
+  else
+    await connection.invoke("JoinMatch", matchId);
   state.connection = connection;
 }
 
@@ -459,11 +475,16 @@ function showCurtain(match) {
   const won = match.Winner === mine;
   const lost = match.Status === "Completed" && match.Winner && match.Winner !== mine;
   const rival = state.bot ? "Çaycı" : mine === "Light" ? "Koyu" : "Açık";
-  const lines = won
-    ? ["Hesap sende değil", "Fincanlar senin tarafına döndü. Çaycı bu turu deftere yazacak.", "Masa senin"]
-    : lost
-      ? ["Çay soğudu", `${rival} fincanları topladı. Bir yudum daha, bu sefer kenara bak.`, "Hesap geldi"]
-      : ["İki çay, bir hesap", "Ne sen devirdin ne o. Bardaklar ortada kaldı.", "Berabere"];
+  const slippedOut = match.Walkover === true;
+  const lines = slippedOut && won
+    ? ["Çayını içmeden kalktı", `${rival} kapıya yöneldi, hesabı da sana bıraktı. Masa senin.`, "Rakip kaçtı"]
+    : slippedOut && lost
+      ? ["Kapıyı sen çektin", "Fincan masada kaldı. Çaycı bu turu karşıya yazdı.", "Erken kalktın"]
+      : won
+      ? ["Hesap sende değil", "Fincanlar senin tarafına döndü. Çaycı bu turu deftere yazacak.", "Masa senin"]
+      : lost
+        ? ["Çay soğudu", `${rival} fincanları topladı. Bir yudum daha, bu sefer kenara bak.`, "Hesap geldi"]
+        : ["İki çay, bir hesap", "Ne sen devirdin ne o. Bardaklar ortada kaldı.", "Berabere"];
   curtain.className = `curtain ${won ? "win" : lost ? "lose" : "draw"}`;
   document.querySelector("#curtain-kicker").textContent = lines[2];
   document.querySelector("#curtain-title").textContent = lines[0];
@@ -537,6 +558,9 @@ function formatClock(total) {
 
 function turnLabel(match) {
   if (match.Status === "Waiting") return "Rakip bekleniyor";
+  if (match.Walkover && match.Status === "Completed") {
+    return match.Winner === "Light" ? "Koyu masayı bıraktı" : "Açık masayı bıraktı";
+  }
   if (match.Status === "Completed" && match.Winner === "Light") return "Açık kazandı";
     if (match.Status === "Completed" && match.Winner === "Dark") return "Koyu kazandı";
     if (match.Status === "Draw") return "Berabere";

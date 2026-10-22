@@ -33,3 +33,7 @@ public sealed record TileRevealed(
     Guid MatchId,
     BoardPosition Position,
     PlayerSide Side) : MatchEvent;
+
+public sealed record RivalLeft(
+    Guid MatchId,
+    PlayerSide Winner) : MatchEvent;

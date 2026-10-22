@@ -35,6 +35,7 @@ public sealed class ApplicationDbContextInitializer(
                 await context.Database.EnsureCreatedAsync(cancellationToken);
                 await EnsureBoardCellWeightColumnAsync(cancellationToken);
                 await EnsureBoardCellPlacedByColumnAsync(cancellationToken);
+                await EnsureMatchWalkoverColumnAsync(cancellationToken);
             }
             else if ((await context.Database.GetPendingMigrationsAsync(cancellationToken)).Any())
             {
@@ -97,6 +98,33 @@ public sealed class ApplicationDbContextInitializer(
                 cancellationToken);
             await context.Database.ExecuteSqlRawAsync(
                 """UPDATE "BoardCells" SET "PlacedBy" = "Owner" WHERE "Owner" IS NOT NULL AND "PlacedBy" IS NULL;""",
+                cancellationToken);
+        }
+        finally
+        {
+            if (!wasOpen)
+                await connection.CloseAsync();
+        }
+    }
+
+    /// <summary>Hükmen galibiyet notu. Eski masalarda false sayılır.</summary>
+    private async Task EnsureMatchWalkoverColumnAsync(CancellationToken cancellationToken)
+    {
+        var connection = context.Database.GetDbConnection();
+        var wasOpen = connection.State == System.Data.ConnectionState.Open;
+        if (!wasOpen)
+            await connection.OpenAsync(cancellationToken);
+
+        try
+        {
+            await using var command = connection.CreateCommand();
+            command.CommandText = "SELECT COUNT(*) FROM pragma_table_info('Matches') WHERE name = 'Walkover'";
+            var exists = Convert.ToInt32(await command.ExecuteScalarAsync(cancellationToken)) > 0;
+            if (exists)
+                return;
+
+            await context.Database.ExecuteSqlRawAsync(
+                """ALTER TABLE "Matches" ADD COLUMN "Walkover" INTEGER NOT NULL DEFAULT 0;""",
                 cancellationToken);
         }
         finally

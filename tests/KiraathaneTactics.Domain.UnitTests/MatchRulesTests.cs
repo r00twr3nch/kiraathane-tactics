@@ -326,6 +326,33 @@ public class MatchRulesTests
         act.Should().Throw<DomainException>().Which.Code.Should().Be("Match.TileSpent");
     }
 
+    [Fact]
+    public void A_walkover_hands_the_table_to_whoever_stayed_and_stops_the_clock()
+    {
+        var match = Match.OpenWaitingRoom("MASA01", "light-token", PlayerSide.Light);
+        match.SeatDark("dark-token");
+
+        match.AwardWalkover(PlayerSide.Light);
+
+        match.Status.Should().Be(MatchStatus.Completed);
+        match.Winner.Should().Be(PlayerSide.Light);
+        match.Walkover.Should().BeTrue();
+        match.TurnDeadlineUtc.Should().BeNull();
+        match.DomainEvents.OfType<RivalLeft>().Single().Winner.Should().Be(PlayerSide.Light);
+
+        match.AwardWalkover(PlayerSide.Dark);
+        match.Winner.Should().Be(PlayerSide.Light);
+    }
+
+    [Fact]
+    public void A_walkover_before_the_rival_sits_is_refused()
+    {
+        var match = Match.OpenWaitingRoom("MASA02", "light-token");
+
+        var act = () => match.AwardWalkover(PlayerSide.Dark);
+        act.Should().Throw<DomainException>().Which.Code.Should().Be("Match.NotStarted");
+    }
+
     private static void FillUntilDone(Match match)
     {
         for (var row = 0; row < 5 && match.Status == MatchStatus.InProgress; row++)
