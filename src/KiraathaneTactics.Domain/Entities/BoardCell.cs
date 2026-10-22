@@ -10,6 +10,8 @@ public class BoardCell : BaseEntity
     public int Row { get; private set; }
     public int Column { get; private set; }
     public PlayerSide? Owner { get; private set; }
+    /// <summary>Taşı masaya koyan taraf. Çevirme sahibi değiştirir, koyanı değiştirmez.</summary>
+    public PlayerSide? PlacedBy { get; private set; }
     public Guid? TileDefinitionId { get; private set; }
     public int Value { get; private set; }
     public int North { get; private set; }
@@ -42,6 +44,7 @@ public class BoardCell : BaseEntity
         bool faceDown)
     {
         Owner = owner;
+        PlacedBy = owner;
         TileDefinitionId = tileDefinitionId;
         Value = value;
         North = north;

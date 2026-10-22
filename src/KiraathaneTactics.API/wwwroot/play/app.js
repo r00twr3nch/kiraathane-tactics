@@ -100,14 +100,30 @@ async function connect(matchId) {
   state.connection = connection;
 }
 
+const copiesPerTile = 2;
+
+function copiesLeft(tileId, side) {
+  const row = state.match?.Stock?.find((item) => item.TileDefinitionId === tileId);
+  if (!row) return copiesPerTile;
+  return side === "Dark" ? row.DarkLeft : row.LightLeft;
+}
+
 function renderCatalog() {
-  catalogEl.replaceChildren(...state.catalog.map((tile) => {
+  const side = state.seat?.Side || "Light";
+  const ordered = [...state.catalog]
+    .filter((tile) => copiesLeft(tile.Id, side) > 0)
+    .sort((a, b) => a.Value - b.Value || a.Name.localeCompare(b.Name, "tr"));
+  if (state.selectedTileId && !ordered.some((tile) => tile.Id === state.selectedTileId))
+    state.selectedTileId = null;
+  catalogEl.replaceChildren(...ordered.map((tile) => {
+    const left = copiesLeft(tile.Id, side);
     const button = document.createElement("button");
     button.type = "button";
     button.className = "tile";
+    if (tile.Id === state.selectedTileId) button.classList.add("selected");
     button.dataset.id = tile.Id;
-    button.setAttribute("aria-label", `${tile.Name}, kuzey ${tile.North}, doğu ${tile.East}, güney ${tile.South}, batı ${tile.West}`);
-    button.innerHTML = `<span class="tile-face"><strong>${tile.Name}</strong><span class="cup" aria-hidden="true"><i class="n">${tile.North}</i><i class="e">${tile.East}</i><i class="s">${tile.South}</i><i class="w">${tile.West}</i><b>${tile.Value}</b></span></span>`;
+    button.setAttribute("aria-label", `${tile.Name}, ${left} kaldı, kuzey ${tile.North}, doğu ${tile.East}, güney ${tile.South}, batı ${tile.West}`);
+    button.innerHTML = `<span class="tile-face"><strong>${tile.Name}<em>×${left}</em></strong><span class="cup" aria-hidden="true"><i class="n">${tile.North}</i><i class="e">${tile.East}</i><i class="s">${tile.South}</i><i class="w">${tile.West}</i><b>${tile.Value}</b></span></span>`;
     button.addEventListener("click", () => selectTile(tile.Id));
     button.querySelector(".cup").addEventListener("pointerdown", (event) => beginDrag(event, tile));
     return button;
@@ -124,6 +140,7 @@ const drag = { pointerId: null, tile: null, ghost: null, origin: null, moved: fa
 function beginDrag(event, tile) {
   if (event.button !== undefined && event.button !== 0) return;
   if (!state.seat || state.match?.Status !== "InProgress" || state.match.CurrentTurn !== state.seat.Side) return;
+  if (copiesLeft(tile.Id, state.seat.Side) === 0) return;
   selectTile(tile.Id);
   drag.pointerId = event.pointerId;
   drag.tile = tile;
@@ -196,6 +213,7 @@ function render() {
 
   const cells = [...match.Cells].sort((a, b) => a.Row - b.Row || a.Column - b.Column);
   boardEl.replaceChildren(...cells.map((cell) => renderCell(cell)));
+  renderCatalog();
   document.querySelectorAll(".perk").forEach((button) => {
     button.classList.toggle("selected", button.dataset.perk === state.selectedPerk);
   });
@@ -244,6 +262,10 @@ async function place(row, column) {
   }
   if (!state.selectedTileId) {
     setStatus("Önce elinden bir taş seç.", true);
+    return;
+  }
+  if (copiesLeft(state.selectedTileId, state.seat.Side) === 0) {
+    setStatus("Bu taştan ikisini de kullandın.", true);
     return;
   }
 
@@ -334,7 +356,8 @@ function chooseBotMove(match, bot) {
   const empty = match.Cells.filter((cell) => cell.Owner == null);
   const opponent = bot.side === "Light" ? "Dark" : "Light";
   const moves = [];
-  for (const tile of bot.catalog) {
+  const hand = bot.catalog.filter((tile) => copiesLeft(tile.Id, bot.side) > 0);
+  for (const tile of hand) {
     for (const spot of empty) {
       const captured = capturesAt(match, tile, spot, bot.side);
       const exposed = threatAt(match, bot, tile, spot, opponent);
@@ -368,7 +391,8 @@ function threatAt(match, bot, tile, spot, opponent) {
   if (!match.Cells.some((cell) => cell.Owner === opponent)) return 0;
   return neighborsOf(spot).filter(({ cell, attack, defense }) => {
     if (cell?.Owner != null) return false;
-    return bot.catalog.some((reply) => {
+    const replies = bot.catalog.filter((tile) => copiesLeft(tile.Id, opponent) > 0);
+    return replies.some((reply) => {
       const edge = reply[defense];
       return edge > tile[attack] || (edge === tile[attack] && edge > 0 && reply.Value > tile.Value);
     });

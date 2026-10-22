@@ -308,6 +308,24 @@ public class MatchRulesTests
         match.Winner.Should().Be(PlayerSide.Dark);
     }
 
+    [Fact]
+    public void A_side_may_place_each_tile_only_twice_and_a_flip_does_not_refund_it()
+    {
+        var match = new Match();
+        var chess = Card("Satranç", 7, north: 7, east: 5, south: 4, west: 6);
+
+        match.PlaceTile(PlayerSide.Light, At(0, 0), chess);
+        match.PlaceTile(PlayerSide.Dark, At(4, 4), Card("Lokum", 1, north: 1));
+        match.PlaceTile(PlayerSide.Light, At(0, 1), chess);
+        match.PlaceTile(PlayerSide.Dark, At(4, 3), Card("Çay", 3, north: 2));
+
+        match.CopiesLeft(PlayerSide.Light, chess.Id).Should().Be(0);
+        match.CopiesLeft(PlayerSide.Dark, chess.Id).Should().Be(2);
+
+        var act = () => match.PlaceTile(PlayerSide.Light, At(0, 2), chess);
+        act.Should().Throw<DomainException>().Which.Code.Should().Be("Match.TileSpent");
+    }
+
     private static void FillUntilDone(Match match)
     {
         for (var row = 0; row < 5 && match.Status == MatchStatus.InProgress; row++)

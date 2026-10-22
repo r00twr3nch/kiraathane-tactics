@@ -34,6 +34,7 @@ public sealed class ApplicationDbContextInitializer(
                 logger.LogInformation("SQLite geliştirme veritabanı hazırlanıyor...");
                 await context.Database.EnsureCreatedAsync(cancellationToken);
                 await EnsureBoardCellWeightColumnAsync(cancellationToken);
+                await EnsureBoardCellPlacedByColumnAsync(cancellationToken);
             }
             else if ((await context.Database.GetPendingMigrationsAsync(cancellationToken)).Any())
             {
@@ -66,6 +67,36 @@ public sealed class ApplicationDbContextInitializer(
 
             await context.Database.ExecuteSqlRawAsync(
                 """ALTER TABLE "BoardCells" ADD COLUMN "Value" INTEGER NOT NULL DEFAULT 0;""",
+                cancellationToken);
+        }
+        finally
+        {
+            if (!wasOpen)
+                await connection.CloseAsync();
+        }
+    }
+
+    /// <summary>Kopya sınırı koyanı hatırlar. Eski karelerde koyan, o anki sahip sayılır.</summary>
+    private async Task EnsureBoardCellPlacedByColumnAsync(CancellationToken cancellationToken)
+    {
+        var connection = context.Database.GetDbConnection();
+        var wasOpen = connection.State == System.Data.ConnectionState.Open;
+        if (!wasOpen)
+            await connection.OpenAsync(cancellationToken);
+
+        try
+        {
+            await using var command = connection.CreateCommand();
+            command.CommandText = "SELECT COUNT(*) FROM pragma_table_info('BoardCells') WHERE name = 'PlacedBy'";
+            var exists = Convert.ToInt32(await command.ExecuteScalarAsync(cancellationToken)) > 0;
+            if (exists)
+                return;
+
+            await context.Database.ExecuteSqlRawAsync(
+                """ALTER TABLE "BoardCells" ADD COLUMN "PlacedBy" TEXT NULL;""",
+                cancellationToken);
+            await context.Database.ExecuteSqlRawAsync(
+                """UPDATE "BoardCells" SET "PlacedBy" = "Owner" WHERE "Owner" IS NOT NULL AND "PlacedBy" IS NULL;""",
                 cancellationToken);
         }
         finally

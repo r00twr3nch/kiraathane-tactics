@@ -15,6 +15,8 @@ public class Match : AuditableEntity
     public const int BoardSize = BoardPosition.Size;
     public const int CellCount = BoardSize * BoardSize;
     public const int PerksPerPlayer = 3;
+    /// <summary>Bir oyuncu aynı taşı maç boyunca en fazla bu kadar kez basar.</summary>
+    public const int CopiesPerTile = 2;
     public const int TilesToWinEarly = 13;
         public const int MatchLengthSeconds = 210;
         public const int LafEbeligiPenaltySeconds = 15;
@@ -143,6 +145,11 @@ public class Match : AuditableEntity
         if (!cell.IsEmpty)
             throw new DomainException("Bu kare dolu.", "Match.CellOccupied");
 
+        if (CopiesUsed(side, tile.Id) >= CopiesPerTile)
+            throw new DomainException(
+                $"{tile.Name} elinde kalmadı. Her taştan {CopiesPerTile} tane var.",
+                "Match.TileSpent");
+
         var locked = false;
         var faceDown = false;
 
@@ -191,6 +198,13 @@ public class Match : AuditableEntity
             }
 
     public void ClearDomainEvents() => _events.Clear();
+
+    /// <summary>Bu tarafın bu taşı kaç kez masaya koyduğu. Çevrilen taşlar sayılır, geri gelmez.</summary>
+    public int CopiesUsed(PlayerSide side, Guid tileDefinitionId) =>
+        _cells.Count(cell => cell.PlacedBy == side && cell.TileDefinitionId == tileDefinitionId);
+
+    public int CopiesLeft(PlayerSide side, Guid tileDefinitionId) =>
+        Math.Max(0, CopiesPerTile - CopiesUsed(side, tileDefinitionId));
 
     private void ResolveCaptures(BoardCell placed, BoardPosition position, PlayerSide side)
     {

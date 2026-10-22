@@ -21,6 +21,8 @@ public sealed record MatchEventDto(string Kind, string Detail);
 
 public sealed record SeatDto(Guid MatchId, string RoomCode, PlayerSide Side, string SeatToken);
 
+public sealed record TileStockDto(Guid TileDefinitionId, int LightLeft, int DarkLeft);
+
 public sealed record MatchStateDto(
     Guid Id,
     MatchStatus Status,
@@ -35,7 +37,8 @@ public sealed record MatchStateDto(
         int DarkSecondsRemaining,
         DateTimeOffset? TurnDeadlineUtc,
         IReadOnlyList<CellDto> Cells,
-        IReadOnlyList<MatchEventDto> Events);
+        IReadOnlyList<MatchEventDto> Events,
+        IReadOnlyList<TileStockDto> Stock);
 
 public static class MatchMapping
 {
@@ -71,7 +74,16 @@ public static class MatchMapping
                 c.IsLocked,
                 c.IsFaceDown))
             .ToList(),
-        match.DomainEvents.Select(ToEventDto).ToList());
+        match.DomainEvents.Select(ToEventDto).ToList(),
+        match.Cells
+            .Where(c => c.TileDefinitionId is not null && c.PlacedBy is not null)
+            .Select(c => c.TileDefinitionId!.Value)
+            .Distinct()
+            .Select(id => new TileStockDto(
+                id,
+                match.CopiesLeft(PlayerSide.Light, id),
+                match.CopiesLeft(PlayerSide.Dark, id)))
+            .ToList());
     }
 
     private static MatchEventDto ToEventDto(MatchEvent domainEvent) => domainEvent switch

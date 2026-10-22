@@ -14,6 +14,7 @@ public sealed class BoardCellConfiguration : IEntityTypeConfiguration<BoardCell>
         builder.Property(c => c.Row).IsRequired();
         builder.Property(c => c.Column).IsRequired();
         builder.Property(c => c.Owner).HasConversion<string>().HasMaxLength(10);
+        builder.Property(c => c.PlacedBy).HasConversion<string>().HasMaxLength(10);
         builder.Property(c => c.Value).IsRequired();
         builder.Property(c => c.North).IsRequired();
         builder.Property(c => c.East).IsRequired();
