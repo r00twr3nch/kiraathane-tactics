@@ -103,11 +103,14 @@ button, .cell { font: inherit; }
 
 .room-code {
   margin: 0;
-  padding: 0 4px;
+  padding: 0 2px;
   color: var(--brass);
   font-family: var(--font-display);
-  font-size: 1.35rem;
-  letter-spacing: 0.16em;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .lobby input, .lobby button, .perk, .ghost {
@@ -157,12 +160,8 @@ button, .cell { font: inherit; }
 }
 
 .room-code {
-  grid-column: 1 / -1;
-  min-width: 0;
-  overflow-wrap: anywhere;
-  font-family: var(--font-display);
-  font-size: clamp(1.2rem, 7vw, 1.8rem);
-  letter-spacing: clamp(0.08em, 2vw, 0.22em);
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .scoreboard {
@@ -571,21 +570,28 @@ button, .cell { font: inherit; }
     margin-bottom: 8px;
   }
 
-  .bar h1 { font-size: 1.15rem; }
+  .bar h1 {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 1.05rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
   .lobby { justify-content: flex-end; flex-wrap: nowrap; gap: 6px; }
-  .lobby form { flex: 0 1 auto; }
-  .lobby input, .lobby button, .leave { min-height: 36px; }
-  .lobby input { width: 6.5ch; padding: 0 8px; }
-  .lobby button, .leave { padding: 0 10px; }
-  .room-code { letter-spacing: 0.08em; font-size: 1rem; }
+  .lobby form { flex: 0 0 auto; }
+  .lobby input, .lobby button, .leave { min-height: 34px; }
+  .lobby input { width: 5.6ch; padding: 0 6px; letter-spacing: 0.08em; }
+  .lobby button, .leave { padding: 0 9px; font-size: 0.82rem; }
+  .room-code { letter-spacing: 0.14em; font-size: 0.95rem; }
 
-  body.in-match .bar h1,
   body.in-match #host-form,
   body.in-match #join-form { display: none; }
 
-  body.in-match .bar { justify-content: space-between; }
-  body.in-match .lobby { flex: 1; }
-  body.in-match .room-code { font-size: 1.15rem; }
+  body.in-match .bar { justify-content: space-between; gap: 10px; }
+  body.in-match .bar h1 { flex: 0 1 auto; font-size: 1.05rem; }
+  body.in-match .lobby { flex: 0 0 auto; }
+  body.in-match .room-code { font-size: 1rem; letter-spacing: 0.16em; }
 
   .scoreboard {
     flex: 0 0 auto;

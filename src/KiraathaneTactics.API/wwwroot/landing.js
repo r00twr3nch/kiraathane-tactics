@@ -6,6 +6,7 @@ const findButton = document.querySelector("#find-rival");
 const botButton = document.querySelector("#play-bot");
 const hostButton = document.querySelector("#host-room");
 const hostCode = document.querySelector("#host-code");
+const joinForm = document.querySelector("#join-room");
 const board = document.querySelector("#leaderboard");
 
 const BOARD_KEY = "kiraathane-wall";
@@ -17,6 +18,10 @@ if (board) renderBoard();
 findButton?.addEventListener("click", () => findRival().catch(fail));
 botButton?.addEventListener("click", () => playBot().catch(fail));
 hostButton?.addEventListener("click", () => hostRoom().catch(fail));
+joinForm?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  joinRoom(new FormData(joinForm).get("roomCode")).catch(fail);
+});
 document.querySelector("#queue-cancel")?.addEventListener("click", cancelQueue);
 
 function renderBoard() {
@@ -72,12 +77,24 @@ async function watchTable(seat) {
 
 async function hostRoom() {
   setBusy(true);
-  note.textContent = "Masa kuruluyor.";
+  note.textContent = "Oda kuruluyor.";
   const seat = await api("/api/matches/rooms", { method: "POST" });
   hostCode.hidden = false;
   hostCode.textContent = seat.RoomCode;
-  note.textContent = "Kod hazır. Karşıdaki oturunca masa açılır.";
+  note.textContent = "Kod hazır. Arkadaşın katılınca oyun açılır.";
   polling = window.setInterval(() => watchTable(seat).catch(fail), 2000);
+}
+
+async function joinRoom(code) {
+  const roomCode = String(code || "").trim().toUpperCase();
+  if (!roomCode) throw new Error("Oda kodunu yaz.");
+  setBusy(true);
+  note.textContent = "Odaya giriliyor.";
+  const seat = await api("/api/matches/rooms/join", {
+    method: "POST",
+    body: JSON.stringify({ roomCode })
+  });
+  goPlay(seat);
 }
 
 async function playBot() {
@@ -129,6 +146,7 @@ function setBusy(busy) {
   if (findButton) findButton.disabled = busy;
   if (botButton) botButton.disabled = busy;
   if (hostButton) hostButton.disabled = busy;
+  joinForm?.querySelectorAll("button, input").forEach((control) => { control.disabled = busy; });
 }
 
 async function api(url, options = {}) {

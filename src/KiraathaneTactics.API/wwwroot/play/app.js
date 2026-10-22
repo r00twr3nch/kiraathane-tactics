@@ -253,7 +253,7 @@ function endDrag(event) {
 
 function render() {
   const match = state.match;
-  document.body.classList.toggle("in-match", Boolean(match) && match.Status !== "Waiting");
+  document.body.classList.toggle("in-match", Boolean(match));
   paintSide("light", match.LightScore, match.LightPerkCharges, match.CurrentTurn === "Light");
   paintSide("dark", match.DarkScore, match.DarkPerkCharges, match.CurrentTurn === "Dark");
   document.querySelector("#turn-pill").textContent = turnLabel(match);

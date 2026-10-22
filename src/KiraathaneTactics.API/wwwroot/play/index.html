@@ -7,14 +7,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,700&family=Outfit:wght@400;500;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=31" />
+  <link rel="stylesheet" href="styles.css?v=33" />
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
   <div class="room">
     <header class="bar">
       <h1>Kıraathane</h1>
-      <section class="lobby" id="lobby" aria-label="Masa aç">
+      <p class="room-code" id="room-banner" hidden></p>
+      <section class="lobby" id="lobby" aria-label="Masa">
         <form id="host-form">
           <button type="submit">Masa aç</button>
         </form>
@@ -23,7 +24,6 @@
           <input id="room-code" name="roomCode" maxlength="6" autocomplete="off" spellcheck="false" placeholder="KOD" required />
           <button type="submit">Otur</button>
         </form>
-        <p class="room-code" id="room-banner" hidden></p>
         <a class="leave" href="/index.html">Çık</a>
       </section>
     </header>
@@ -81,6 +81,6 @@
       </div>
     </div>
   </div>
-  <script src="app.js?v=30"></script>
+  <script src="app.js?v=31"></script>
 </body>
 </html>
