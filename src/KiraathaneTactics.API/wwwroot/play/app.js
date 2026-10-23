@@ -47,12 +47,11 @@ async function boot() {
       ? JSON.parse(sessionStorage.getItem("kiraathane-bot") || "null")
       : null;
     sessionStorage.removeItem("kiraathane-bot");
-    showCode(state.seat.RoomCode);
     await loadMatch(state.seat.MatchId);
     const ranks = { cirak: "Çırak", kalfa: "Kalfa", usta: "Usta" };
     setStatus(state.bot
       ? `${ranks[state.bot.level] || "Kalfa"} çaycı karşında. İlk yudum sende.`
-      : `Masaya oturdun. ${state.match?.CurrentTurn === state.seat.Side ? "Yazı tura sana geldi." : "Yazı tura rakibe geldi."}`);
+      : `İkiniz de oturdunuz. ${state.match?.CurrentTurn === state.seat.Side ? "İlk yudum sende." : "İlk yudum karşıda."}`);
     return;
   }
   setStatus("Masa aç ya da oda koduyla otur.");
@@ -60,9 +59,8 @@ async function boot() {
 
 async function hostRoom() {
   state.seat = await api("/api/matches/rooms", { method: "POST" });
-  showCode(state.seat.RoomCode);
-  await loadMatch(state.seat.MatchId);
-  setStatus("Kod hazır. İlk sıra yazı turayla belli olur.");
+  sessionStorage.setItem("kiraathane-seat", JSON.stringify(state.seat));
+  window.location.href = "/bekle.html?v=34";
 }
 
 async function restartMatch() {
@@ -85,7 +83,6 @@ async function restartMatch() {
       level: bot.level,
       catalog: bot.catalog
     };
-    showCode(light.RoomCode);
     await loadMatch(light.MatchId);
     curtain.hidden = true;
     const ranks = { cirak: "Çırak", kalfa: "Kalfa", usta: "Usta" };
@@ -101,7 +98,6 @@ async function joinRoom(code) {
     method: "POST",
     body: JSON.stringify({ roomCode: String(code || "").trim().toUpperCase() })
   });
-  showCode(state.seat.RoomCode);
   await loadMatch(state.seat.MatchId);
   const mine = state.seat.Side === "Light" ? "Açık" : "Koyu";
   const opens = state.match?.CurrentTurn === state.seat.Side;
@@ -113,12 +109,6 @@ async function loadMatch(matchId) {
   rememberOwners();
   render();
   await connect(matchId);
-}
-
-function showCode(code) {
-  const banner = document.querySelector("#room-banner");
-  banner.hidden = false;
-  banner.textContent = code;
 }
 
 async function connect(matchId) {

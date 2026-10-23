@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Masa bekliyor — Kıraathane Tactics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,680&family=Outfit:wght@400;500;650&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="landing.css?v=34" />
+</head>
+<body class="page-play page-wait">
+  <div class="room" aria-hidden="true">
+    <div class="lamp"></div>
+    <div class="haze"></div>
+  </div>
+  <div class="wait-veil" id="wait-veil" hidden>
+    <p>Kapı açıldı</p>
+  </div>
+  <header class="top">
+    <a class="brand" href="/index.html">Kıraathane</a>
+    <nav class="desk-nav" aria-label="Sayfa">
+      <a href="/siralama.html">Sıralama</a>
+      <a href="/kurallar.html">Kurallar</a>
+      <a href="/oyna.html" aria-current="page">Oyna</a>
+    </nav>
+  </header>
+  <main>
+    <section class="panel play-panel wait-sheet" aria-labelledby="wait-title">
+      <header class="sheet-head">
+        <p class="sheet-mark">Boş sandalye</p>
+        <h1 id="wait-title"><span>Masa</span> <span>hazır</span></h1>
+        <p class="lede">Kodu arkadaşına ver. O oturunca ikiniz de aynı anda tahtaya geçersiniz.</p>
+      </header>
+      <div class="wait-stage">
+        <p class="wait-code" id="wait-code" aria-live="polite">······</p>
+        <button type="button" class="wait-copy" id="wait-copy">Kodu kopyala</button>
+        <ul class="wait-facts" id="wait-facts"></ul>
+        <p class="wait-pulse" id="wait-pulse"><i aria-hidden="true"></i><i aria-hidden="true"></i><i aria-hidden="true"></i> Kapı dinleniyor</p>
+      </div>
+      <div class="table-actions">
+        <a class="back" id="wait-leave" href="/oyna.html">Masayı bırak</a>
+      </div>
+      <p class="note" id="queue-note" role="status"></p>
+    </section>
+  </main>
+  <nav class="dock" aria-label="Masa">
+    <a href="/siralama.html"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 20h10M8 16h8l1.2-7H6.8z"/><path d="M9 9c0-2.4 1.2-4 3-4s3 1.6 3 4"/></svg>Sıralama</a>
+    <a href="/oyna.html" class="dock-play" aria-current="page"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="2.5"/><path d="M9 9h6M15 16h.01"/></svg>Oyna</a>
+    <a href="/kurallar.html"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5.5h12v14H6z"/><path d="M9 9h6M9 12.5h6M9 16h4"/></svg>Kurallar</a>
+  </nav>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+  <script src="landing.js?v=14"></script>
+</body>
+</html>

@@ -105,7 +105,7 @@ async function hostRoom(settings) {
   if (settings.opening === "guest") opening = `&openingSide=${hostDark ? "Light" : "Dark"}`;
   const seat = await api(`/api/matches/rooms?matchMinutes=${settings.minutes}&hostColor=${settings.color}${opening}`, { method: "POST" });
   sessionStorage.setItem("kiraathane-seat", JSON.stringify(seat));
-  window.location.href = `/play/index.html?v=33&from=landing`;
+  window.location.href = `/bekle.html?v=34`;
 }
 
 async function joinRoom(code) {
@@ -144,7 +144,78 @@ async function playBot() {
 function goPlay(seat, versusBot) {
   sessionStorage.setItem("kiraathane-seat", JSON.stringify(seat));
   const bot = versusBot ? "&bot=1" : "";
-  window.location.href = `/play/index.html?v=32&from=landing${bot}`;
+  window.location.href = `/play/index.html?v=34&from=landing${bot}`;
+}
+
+const waitCode = document.querySelector("#wait-code");
+if (waitCode) holdTable();
+
+function holdTable() {
+  const raw = sessionStorage.getItem("kiraathane-seat");
+  const seat = raw ? JSON.parse(raw) : null;
+  const note = document.querySelector("#queue-note");
+  const facts = document.querySelector("#wait-facts");
+  const pulse = document.querySelector("#wait-pulse");
+  const veil = document.querySelector("#wait-veil");
+  if (!seat?.MatchId || !seat.RoomCode) {
+    note.textContent = "Açık masa yok. Önce masayı kur.";
+    window.setTimeout(() => { window.location.href = "/masa.html"; }, 900);
+    return;
+  }
+
+  waitCode.textContent = seat.RoomCode;
+  const sideName = seat.Side === "Dark" ? "Koyu" : "Açık";
+  facts.innerHTML = `<li><span>Senin rengin</span><strong>${sideName}</strong></li><li><span>Durum</span><strong>Kapı açık</strong></li>`;
+  document.querySelector("#wait-copy").addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(seat.RoomCode);
+      note.textContent = "Kod kopyalandı.";
+    } catch {
+      note.textContent = "Kodu elle seç: " + seat.RoomCode;
+    }
+  });
+  document.querySelector("#wait-leave").addEventListener("click", () => {
+    sessionStorage.removeItem("kiraathane-seat");
+  });
+
+  let left = false;
+  const enter = () => {
+    if (left) return;
+    left = true;
+    window.clearInterval(polling);
+    pulse.innerHTML = "<i></i> Rakip oturdu";
+    veil.hidden = false;
+    window.setTimeout(() => goPlay(seat), reducedWait() ? 80 : 720);
+  };
+
+  const watch = async () => {
+    const match = await api(`/api/matches/${seat.MatchId}`);
+    if (match.Status !== "Waiting") enter();
+  };
+
+  polling = window.setInterval(() => watch().catch((error) => {
+    window.clearInterval(polling);
+    note.textContent = error.message || "Masa cevap vermedi.";
+  }), 1200);
+  watch().catch(() => {});
+
+  if (window.signalR) {
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl("/hubs/matches")
+      .withAutomaticReconnect()
+      .build();
+    connection.on("state", (next) => {
+      const match = normalize(next);
+      if (match.Status && match.Status !== "Waiting") enter();
+    });
+    connection.start()
+      .then(() => connection.invoke("JoinMatch", seat.MatchId))
+      .catch(() => {});
+  }
+}
+
+function reducedWait() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
 function cancelQueue() {

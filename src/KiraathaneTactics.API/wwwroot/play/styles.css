@@ -101,17 +101,7 @@ button, .cell { font: inherit; }
   align-items: center;
 }
 
-.room-code {
-  margin: 0;
-  padding: 0 2px;
-  color: var(--brass);
-  font-family: var(--font-display);
-  font-size: 1.05rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
+body.in-match .lobby { display: none; }
 
 .lobby input, .lobby button, .perk, .ghost {
   min-height: 44px;
@@ -159,10 +149,6 @@ button, .cell { font: inherit; }
   text-transform: uppercase;
 }
 
-.room-code {
-  flex: 0 0 auto;
-  white-space: nowrap;
-}
 
 .scoreboard {
   display: grid;
