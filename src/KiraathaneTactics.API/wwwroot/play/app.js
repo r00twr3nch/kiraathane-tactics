@@ -202,11 +202,9 @@ function moveDrag(event) {
     const box = source.getBoundingClientRect();
     drag.ghost = source.cloneNode(true);
     drag.ghost.classList.add("drag-ghost");
-    drag.liftX = event.clientX - (box.left + box.width / 2);
-    drag.liftY = event.clientY - (box.top + box.height / 2);
     document.body.append(drag.ghost);
   }
-  moveGhost(event.clientX - drag.liftX, event.clientY - drag.liftY - 120);
+  moveGhost(event.clientX, event.clientY);
   const cell = cellUnder(event.clientX, event.clientY);
   document.querySelectorAll(".cell.drop-target").forEach((item) => item.classList.remove("drop-target"));
   if (cell && !cell.classList.contains("filled")) cell.classList.add("drop-target");
