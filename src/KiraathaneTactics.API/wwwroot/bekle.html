@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,680&family=Outfit:wght@400;500;650&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="landing.css?v=34" />
+  <link rel="stylesheet" href="landing.css?v=62" />
 </head>
 <body class="page-play page-wait">
   <div class="room" aria-hidden="true">
@@ -17,6 +17,7 @@
   <div class="wait-veil" id="wait-veil" hidden>
     <p>Kapı açıldı</p>
   </div>
+  <p class="tea-toast" id="tea-toast" hidden>Afiyet olsun</p>
   <header class="top">
     <a class="brand" href="/index.html">Kıraathane</a>
     <nav class="desk-nav" aria-label="Sayfa">
@@ -30,13 +31,39 @@
       <header class="sheet-head">
         <p class="sheet-mark">Boş sandalye</p>
         <h1 id="wait-title"><span>Masa</span> <span>hazır</span></h1>
-        <p class="lede">Kodu arkadaşına ver. O oturunca ikiniz de aynı anda tahtaya geçersiniz.</p>
+        <p class="lede">Kodu arkadaşına ver. O gelene kadar bir çay iç, müesseseden.</p>
       </header>
       <div class="wait-stage">
         <p class="wait-code" id="wait-code" aria-live="polite">······</p>
         <button type="button" class="wait-copy" id="wait-copy">Kodu kopyala</button>
         <ul class="wait-facts" id="wait-facts"></ul>
         <p class="wait-pulse" id="wait-pulse"><i aria-hidden="true"></i><i aria-hidden="true"></i><i aria-hidden="true"></i> Kapı dinleniyor</p>
+        <button type="button" class="tea-sip" id="tea-sip">
+          <svg class="tea-glass" viewBox="0 0 34 48" aria-hidden="true">
+            <defs>
+              <clipPath id="tea-tulip" clipPathUnits="userSpaceOnUse">
+                <path d="M5.4 3.2H28.6C29.4 6.6 28.2 10 26.2 13.2 24.4 16 23.2 18 23.2 20.2c0 2.4 1.6 4.4 3.4 6.6 1.8 2.2 2.8 4.4 2.4 6.8-.9 5.4-6.2 9.4-12 9.4s-11.1-4-12-9.4c-.4-2.4.6-4.6 2.4-6.8 1.8-2.2 3.4-4.2 3.4-6.6 0-2.2-1.2-4.2-3-7C5.8 10 4.6 6.6 5.4 3.2Z"/>
+              </clipPath>
+              <linearGradient id="tea-brew" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#ffd0c4"/>
+                <stop offset="0.08" stop-color="#e1062c"/>
+                <stop offset="0.55" stop-color="#b00018"/>
+                <stop offset="1" stop-color="#7a0614"/>
+              </linearGradient>
+            </defs>
+            <g clip-path="url(#tea-tulip)">
+              <rect class="tea-air" x="2" y="3.2" width="30" height="8.6" fill="rgba(255,255,255,.55)"/>
+              <path class="tea-brew" d="M2 11.2h30v36H2z"/>
+              <path class="tea-shine" d="M12 14c1 9 .2 18-1 24" fill="none" stroke="rgba(255,236,210,.55)" stroke-width="1.8" stroke-linecap="round"/>
+              <g class="tea-spoon">
+                <path d="M17 4.2v28" fill="none" stroke="#c9a24e" stroke-width="1.5" stroke-linecap="round"/>
+                <ellipse cx="17" cy="32.6" rx="2.1" ry="2.6" fill="#d7b15a"/>
+              </g>
+            </g>
+            <path class="tea-lip" d="M5.4 3.2H28.6C29.4 6.6 28.2 10 26.2 13.2 24.4 16 23.2 18 23.2 20.2c0 2.4 1.6 4.4 3.4 6.6 1.8 2.2 2.8 4.4 2.4 6.8-.9 5.4-6.2 9.4-12 9.4s-11.1-4-12-9.4c-.4-2.4.6-4.6 2.4-6.8 1.8-2.2 3.4-4.2 3.4-6.6 0-2.2-1.2-4.2-3-7C5.8 10 4.6 6.6 5.4 3.2Z" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="1.2" stroke-linejoin="round"/>
+          </svg>
+          <span class="tea-label">Bir çay iç</span>
+        </button>
       </div>
       <div class="table-actions">
         <a class="back" id="wait-leave" href="/oyna.html">Masayı bırak</a>
@@ -50,6 +77,6 @@
     <a href="/kurallar.html"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5.5h12v14H6z"/><path d="M9 9h6M9 12.5h6M9 16h4"/></svg>Kurallar</a>
   </nav>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
-  <script src="landing.js?v=14"></script>
+  <script src="landing.js?v=23"></script>
 </body>
 </html>

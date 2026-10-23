@@ -177,6 +177,25 @@ function holdTable() {
   document.querySelector("#wait-leave").addEventListener("click", () => {
     sessionStorage.removeItem("kiraathane-seat");
   });
+  const sip = document.querySelector("#tea-sip");
+  const toast = document.querySelector("#tea-toast");
+  let sipping = false;
+  sip?.addEventListener("click", () => {
+    if (sipping) return;
+    sipping = true;
+    sip.classList.add("stirring");
+    stirTea();
+    const spot = sip.getBoundingClientRect();
+    toast.style.top = `${spot.top - 8}px`;
+    toast.style.transform = "translate(-50%, -100%)";
+    document.body.appendChild(toast);
+    toast.hidden = false;
+    window.setTimeout(() => {
+      sip.classList.remove("stirring");
+      toast.hidden = true;
+      sipping = false;
+    }, reducedWait() ? 400 : 2200);
+  });
 
   let left = false;
   const enter = () => {
@@ -212,6 +231,21 @@ function holdTable() {
       .then(() => connection.invoke("JoinMatch", seat.MatchId))
       .catch(() => {});
   }
+}
+
+function stirTea() {
+  if (reducedWait()) return;
+  const clip = stirTea.clip || (stirTea.clip = new Audio("cay-karistir.mp3"));
+  clip.currentTime = 0;
+  clip.volume = 0.9;
+  const playing = clip.play();
+  if (!playing) return;
+  playing.catch(() => {});
+  window.clearTimeout(stirTea.stop);
+  stirTea.stop = window.setTimeout(() => {
+    clip.pause();
+    clip.currentTime = 0;
+  }, 2200);
 }
 
 function reducedWait() {
