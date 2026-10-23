@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,680&family=Outfit:wght@400;500;650&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="landing.css?v=63" />
+  <link rel="stylesheet" href="landing.css?v=65" />
 </head>
 <body class="page-play">
   <div class="room" aria-hidden="true">
@@ -60,8 +60,33 @@
     </section>
   </main>
   <dialog id="queue" aria-labelledby="queue-title">
-    <h2 id="queue-title">Masa bakılıyor</h2>
-    <p id="queue-copy">Boş masa aranıyor.</p>
+    <div class="queue-glass" aria-hidden="true">
+      <svg class="tea-glass" viewBox="0 0 34 48">
+        <defs>
+          <clipPath id="queue-tulip" clipPathUnits="userSpaceOnUse">
+            <path d="M5.4 3.2H28.6C29.4 6.6 28.2 10 26.2 13.2 24.4 16 23.2 18 23.2 20.2c0 2.4 1.6 4.4 3.4 6.6 1.8 2.2 2.8 4.4 2.4 6.8-.9 5.4-6.2 9.4-12 9.4s-11.1-4-12-9.4c-.4-2.4.6-4.6 2.4-6.8 1.8-2.2 3.4-4.2 3.4-6.6 0-2.2-1.2-4.2-3-7C5.8 10 4.6 6.6 5.4 3.2Z"/>
+          </clipPath>
+          <linearGradient id="queue-brew" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#ffd0c4"/>
+            <stop offset="0.08" stop-color="#e1062c"/>
+            <stop offset="0.55" stop-color="#b00018"/>
+            <stop offset="1" stop-color="#7a0614"/>
+          </linearGradient>
+        </defs>
+        <g clip-path="url(#queue-tulip)">
+          <rect class="tea-air" x="2" y="3.2" width="30" height="8.6" fill="rgba(255,255,255,.55)"/>
+          <path class="tea-brew" d="M2 11.2h30v36H2z" fill="url(#queue-brew)"/>
+          <path class="tea-shine" d="M12 14c1 9 .2 18-1 24" fill="none" stroke="rgba(255,236,210,.55)" stroke-width="1.8" stroke-linecap="round"/>
+          <g class="tea-spoon">
+            <path d="M17 4.2v28" fill="none" stroke="#c9a24e" stroke-width="1.5" stroke-linecap="round"/>
+            <ellipse cx="17" cy="32.6" rx="2.1" ry="2.6" fill="#d7b15a"/>
+          </g>
+        </g>
+        <path class="tea-lip" d="M5.4 3.2H28.6C29.4 6.6 28.2 10 26.2 13.2 24.4 16 23.2 18 23.2 20.2c0 2.4 1.6 4.4 3.4 6.6 1.8 2.2 2.8 4.4 2.4 6.8-.9 5.4-6.2 9.4-12 9.4s-11.1-4-12-9.4c-.4-2.4.6-4.6 2.4-6.8 1.8-2.2 3.4-4.2 3.4-6.6 0-2.2-1.2-4.2-3-7C5.8 10 4.6 6.6 5.4 3.2Z" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="1.2" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <h2 id="queue-title">Rakip aranıyor</h2>
+    <p id="queue-copy" class="sr">Rakip aranıyor.</p>
     <p class="code" id="queue-code" hidden></p>
     <menu>
       <button type="button" class="cta ghost" id="queue-cancel">Vazgeç</button>
@@ -72,6 +97,6 @@
     <a href="/oyna.html" class="dock-play" aria-current="page"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="2.5"/><path d="M9 9h6M15 16h.01"/></svg>Oyna</a>
     <a href="/kurallar.html"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5.5h12v14H6z"/><path d="M9 9h6M9 12.5h6M9 16h4"/></svg>Kurallar</a>
   </nav>
-  <script src="landing.js?v=14"></script>
+  <script src="landing.js?v=24"></script>
 </body>
 </html>

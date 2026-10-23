@@ -41,7 +41,7 @@ function renderBoard() {
 
 async function findRival() {
   setBusy(true);
-  note.textContent = "Boş masa aranıyor.";
+  note.textContent = "Rakip aranıyor";
   const response = await fetch("/api/matches/queue", {
     method: "POST",
     headers: { Accept: "application/json" }
@@ -55,16 +55,18 @@ async function findRival() {
   const seat = normalize(body.data ?? body.Data);
   if (response.status === 202) {
     offered = seat;
-    note.textContent = "Sıradasın. Rakip oturunca masa açılır.";
-    queueCopy.textContent = "Rakip aranıyor. Başka bir telefon da aynı düğmeye basarsa masaya oturur.";
+    note.textContent = "Rakip aranıyor";
+    queueCopy.textContent = "Rakip aranıyor";
     queueCode.hidden = true;
     if (typeof dialog.showModal === "function") dialog.showModal();
+    dialog.classList.add("searching");
     polling = window.setInterval(() => watchTable(seat).catch(fail), 1500);
     return;
   }
 
-  note.textContent = "Boş masa bulundu, oturuluyor.";
-  if (dialog.open) dialog.close();
+  note.textContent = "Rakip bulundu, oturuluyor.";
+  dialog?.classList.remove("searching");
+  if (dialog?.open) dialog.close();
   goPlay(seat);
 }
 
@@ -73,7 +75,8 @@ async function watchTable(seat) {
   if (match.Status === "Waiting") return;
   window.clearInterval(polling);
   offered = null;
-  if (dialog.open) dialog.close();
+  dialog?.classList.remove("searching");
+  if (dialog?.open) dialog.close();
   goPlay(seat);
 }
 
@@ -258,7 +261,8 @@ function cancelQueue() {
   offered = null;
   setBusy(false);
   note.textContent = "Arama bırakıldı.";
-  if (dialog.open) dialog.close();
+  dialog?.classList.remove("searching");
+  if (dialog?.open) dialog.close();
   if (!seat?.MatchId) return;
   fetch(`/api/matches/queue/${seat.MatchId}`, { method: "DELETE" }).catch(() => {});
 }
@@ -266,7 +270,8 @@ function cancelQueue() {
 function fail(error) {
   window.clearInterval(polling);
   setBusy(false);
-  if (dialog.open) dialog.close();
+  dialog?.classList.remove("searching");
+  if (dialog?.open) dialog.close();
   note.textContent = error.message || "Masa açılamadı.";
 }
 
