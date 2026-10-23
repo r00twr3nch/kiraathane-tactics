@@ -336,7 +336,7 @@ function readAccount() {
 
 function paintAccount() {
   const account = readAccount();
-  const label = account ? account.FullName : "Kapı";
+  const label = account ? (account.FullName || account.RegisteredName) : "Kapı";
   const onDoor = location.pathname.endsWith("/kapi.html");
   const nav = document.querySelector(".desk-nav");
   if (nav && !nav.querySelector("[data-account]")) {
@@ -360,7 +360,47 @@ function paintAccount() {
   });
 }
 
-window.KiraathaneAccount = { read: readAccount, paint: paintAccount };
+const RANKS = [
+  [0, "Çırak"],
+  [3, "Kalfa"],
+  [8, "Usta"],
+  [15, "Kıraathane Ağası"]
+];
+
+function winsKey(account) {
+  return `kiraathane-wins:${account?.UserId || "misafir"}`;
+}
+
+function readWins(account = readAccount()) {
+  const raw = Number(localStorage.getItem(winsKey(account)));
+  return Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 0;
+}
+
+function rankFor(wins) {
+  let title = RANKS[0][1];
+  let next = RANKS[1][0];
+  for (let index = 0; index < RANKS.length; index += 1) {
+    if (wins >= RANKS[index][0]) {
+      title = RANKS[index][1];
+      next = RANKS[index + 1]?.[0] ?? null;
+    }
+  }
+  return { title, next };
+}
+
+function noteWin(matchId) {
+  const account = readAccount();
+  if (!account || !matchId) return readWins(account);
+  const seenKey = `kiraathane-wins-seen:${account.UserId}`;
+  const seen = JSON.parse(localStorage.getItem(seenKey) || "[]");
+  if (seen.includes(matchId)) return readWins(account);
+  const wins = readWins(account) + 1;
+  localStorage.setItem(winsKey(account), String(wins));
+  localStorage.setItem(seenKey, JSON.stringify([matchId, ...seen].slice(0, 40)));
+  return wins;
+}
+
+window.KiraathaneAccount = { read: readAccount, paint: paintAccount, wins: readWins, rank: rankFor, noteWin };
 
 async function api(url, options = {}) {
   const account = readAccount();

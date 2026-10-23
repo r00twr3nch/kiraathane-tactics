@@ -26,9 +26,9 @@ public sealed class LoginCommandHandler(
 
         var token = jwtTokenGenerator.Generate(user);
 
+        var username = string.IsNullOrWhiteSpace(user.RegisteredName) ? user.FullName : user.RegisteredName;
         return new AuthenticationResponse(
-            user.Id, user.Email, user.FullName,
-            string.IsNullOrWhiteSpace(user.RegisteredName) ? user.FullName : user.RegisteredName,
+            user.Id, user.Email, username, username,
             user.CreatedAt, user.Role.ToString(), token.AccessToken, token.ExpiresAt);
     }
 }

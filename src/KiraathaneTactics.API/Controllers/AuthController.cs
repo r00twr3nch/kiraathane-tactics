@@ -70,20 +70,12 @@ public sealed class AuthController(ISender sender) : ApiControllerBase(sender)
         CancellationToken cancellationToken)
         => HandleResult(await Sender.Send(command, cancellationToken));
 
-    /// <summary>Açık hesabın duvar adını değiştirir.</summary>
-    /// <remarks>
-    /// Bearer token zorunludur. Aynı kullanıcının eski duvar satırları yeni ada çekilir.
-    ///
-    ///     PATCH /api/auth/profile
-    ///     { "fullName": "Çaycı Nuri" }
-    /// </remarks>
-    /// <response code="200">Ad güncellendi; yeni token döner.</response>
-    /// <response code="400">Ad 2 ile 24 karakter arasında değil.</response>
+    /// <summary>Kullanıcı adı kilitlidir. Bu uç nokta artık ad değiştirmez.</summary>
+    /// <response code="409">Kullanıcı adı kayıtta yazılır, sonradan değişmez.</response>
     /// <response code="401">Oturum yok veya token geçersiz.</response>
     [Authorize]
     [HttpPatch("profile")]
-    [ProducesResponseType(typeof(ApiResponse<AuthenticationResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Rename(
         [FromBody] RenameCommand command,

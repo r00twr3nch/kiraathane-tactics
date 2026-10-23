@@ -16,4 +16,7 @@ public static class AuthenticationErrors
 
     public static readonly Error NotSignedIn =
         Error.Unauthorized("Auth.NotSignedIn", "Önce kapıdan içeri gir.");
+
+    public static readonly Error NameLocked =
+        Error.Conflict("Auth.NameLocked", "Kullanıcı adı kayıtta yazılır, sonradan değişmez.");
 }

@@ -470,6 +470,7 @@ function showCurtain(match) {
       : lost
         ? ["Çay soğudu", `${rival} fincanları topladı. Bir yudum daha, bu sefer kenara bak.`, "Hesap geldi"]
         : ["İki çay, bir hesap", "Ne sen devirdin ne o. Bardaklar ortada kaldı.", "Berabere"];
+  if (won && window.KiraathaneAccount?.noteWin) window.KiraathaneAccount.noteWin(match.Id);
   curtain.className = `curtain ${won ? "win" : lost ? "lose" : "draw"}`;
   document.querySelector("#curtain-kicker").textContent = lines[2];
   document.querySelector("#curtain-title").textContent = lines[0];
@@ -508,10 +509,10 @@ function bindWallSign(match) {
     body: JSON.stringify({
       matchId: match.Id,
       seatToken: state.seat.SeatToken,
-      name: account.FullName
+      name: account.FullName || account.RegisteredName
     })
   }).then(() => {
-    signed.textContent = `${account.FullName} duvara yazıldı.`;
+    signed.textContent = `${account.FullName || account.RegisteredName} duvara yazıldı.`;
   }).catch((error) => {
     signed.textContent = error.message;
   });

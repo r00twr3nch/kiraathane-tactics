@@ -38,9 +38,10 @@ public sealed class SignWallCommandHandler(
         if (userId is not null)
             account = await users.GetByIdAsync(userId.Value, cancellationToken);
 
-        var name = account?.FullName.Trim() ?? request.Name.Trim();
-        if (name.Length is < 2 or > 24)
-            return Result.Failure<WallDto>(Error.Validation("Wall.Name", "Duvar adı 2 ile 24 karakter arasında olmalı."));
+        var stored = string.IsNullOrWhiteSpace(account?.RegisteredName) ? account?.FullName : account?.RegisteredName;
+        var name = stored?.Trim() ?? request.Name.Trim();
+        if (name.Length is < 2 or > 40)
+            return Result.Failure<WallDto>(Error.Validation("Wall.Name", "Kullanıcı adı 2 ile 40 karakter arasında olmalı."));
 
         var already = userId is null
             ? await wall.AnyAsync(entry => entry.MatchId == match.Id && entry.Name == name, cancellationToken)

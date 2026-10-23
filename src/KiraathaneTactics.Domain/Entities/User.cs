@@ -10,9 +10,10 @@ public class User : AuditableEntity
 {
     public string Email { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
+    /// <summary>Kayıtta yazılan isim soyisim. Oyunda ve duvarda görünen tek ad budur.</summary>
     public string FullName { get; set; } = string.Empty;
 
-    /// <summary>Kapıdan ilk yazılan ad. Duvar adı değişse de bu sabit kalır.</summary>
+    /// <summary>Eski kayıt nicki. Artık kullanıcı adından ayrı tutulmaz.</summary>
     public string RegisteredName { get; set; } = string.Empty;
     public UserRole Role { get; set; } = UserRole.User;
     public bool IsActive { get; set; } = true;
