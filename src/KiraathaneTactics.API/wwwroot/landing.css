@@ -935,7 +935,34 @@ dialog menu { display: flex; justify-content: flex-end; margin: 18px 0 0; paddin
   .desk-nav { display: none; }
   .top { padding: 8px 0 4px; }
   .brand { font-size: 1.35rem; }
-  .top { display: none; }
+  .page-home .top { display: none; }
+  .page-play .top,
+  .page-board .top,
+  .page-rules .top {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    width: min(1120px, calc(100% - 20px));
+    margin: 0 auto;
+    padding: calc(8px + env(safe-area-inset-top)) 0 2px;
+  }
+  .page-play .brand,
+  .page-board .brand,
+  .page-rules .brand {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.2rem;
+  }
+  .page-play .brand::before,
+  .page-board .brand::before,
+  .page-rules .brand::before {
+    content: "‹";
+    font-size: 1.55rem;
+    line-height: 1;
+    color: var(--brass);
+  }
   .title-screen {
     flex: 1;
     min-height: 0;
