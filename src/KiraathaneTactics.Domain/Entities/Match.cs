@@ -18,7 +18,9 @@ public class Match : AuditableEntity
     /// <summary>Bir oyuncu aynı taşı maç boyunca en fazla bu kadar kez basar.</summary>
     public const int CopiesPerTile = 2;
     public const int TilesToWinEarly = 13;
-        public const int MatchLengthSeconds = 210;
+        public const int DefaultMatchLengthSeconds = 210;
+        public const int MinMatchLengthSeconds = 60;
+        public const int MaxMatchLengthSeconds = 600;
         public const int LafEbeligiPenaltySeconds = 15;
 
         private readonly List<BoardCell> _cells = [];
@@ -37,10 +39,17 @@ public class Match : AuditableEntity
         public string? DarkSeatToken { get; private set; }
         public DateTimeOffset? StartedAt { get; private set; }
         public DateTimeOffset? TurnDeadlineUtc { get; private set; }
+        /// <summary>Sırası gelen tarafın saati en son bu anda kuruldu. Rakibin saati burada durur.</summary>
+        public DateTimeOffset? TurnStartedAt { get; private set; }
+        public int MatchLengthSeconds { get; private set; } = DefaultMatchLengthSeconds;
+        public int LightSecondsLeft { get; private set; } = DefaultMatchLengthSeconds;
+        public int DarkSecondsLeft { get; private set; } = DefaultMatchLengthSeconds;
         public int LightTimePenaltySeconds { get; private set; }
         public int DarkTimePenaltySeconds { get; private set; }
         /// <summary>Online maçta bir taraf kapıyı çektiyse true. Win perdesi bunu okur.</summary>
         public bool Walkover { get; private set; }
+        /// <summary>Odayı kuran koyu rengi seçtiyse true. Gelen oyuncu o zaman açık koltuğa oturur.</summary>
+        public bool HostPlaysDark { get; private set; }
 
     public IReadOnlyCollection<BoardCell> Cells => _cells;
     public IReadOnlyCollection<MatchEvent> DomainEvents => _events;
@@ -58,26 +67,35 @@ public class Match : AuditableEntity
             DarkSeatToken = "local-dark";
             Status = MatchStatus.InProgress;
             StartedAt = DateTimeOffset.UtcNow;
+            TurnStartedAt = StartedAt;
             TurnDeadlineUtc = StartedAt.Value.AddSeconds(45);
             AllocateBoard();
         }
 
-        public static Match OpenWaitingRoom(string roomCode, string lightSeatToken, PlayerSide? openingSide = null)
+        public static Match OpenWaitingRoom(string roomCode, string hostSeatToken, PlayerSide? openingSide = null, int? matchLengthSeconds = null, bool hostPlaysDark = false)
         {
             if (string.IsNullOrWhiteSpace(roomCode))
                 throw new DomainException("Oda kodu boş olamaz.", "Match.RoomCodeRequired");
 
-            if (string.IsNullOrWhiteSpace(lightSeatToken))
+            if (string.IsNullOrWhiteSpace(hostSeatToken))
                 throw new DomainException("Koltuk anahtarı boş olamaz.", "Match.SeatTokenRequired");
+
+            var length = matchLengthSeconds ?? DefaultMatchLengthSeconds;
+            if (length < MinMatchLengthSeconds || length > MaxMatchLengthSeconds)
+                throw new DomainException("Masa süresi 1 ile 10 dakika arasında olmalı.", "Match.LengthOutOfRange");
 
             var match = new Match
         {
                 RoomCode = roomCode.Trim().ToUpperInvariant(),
-                LightSeatToken = lightSeatToken,
+                LightSeatToken = hostPlaysDark ? null : hostSeatToken,
+                DarkSeatToken = hostPlaysDark ? hostSeatToken : null,
                 Status = MatchStatus.Waiting,
                 StartedAt = null,
                 TurnDeadlineUtc = null,
-                DarkSeatToken = null,
+                MatchLengthSeconds = length,
+                LightSecondsLeft = length,
+                DarkSecondsLeft = length,
+                HostPlaysDark = hostPlaysDark,
                 CurrentTurn = openingSide ?? (Random.Shared.Next(2) == 0 ? PlayerSide.Light : PlayerSide.Dark)
             };
             match.AllocateBoard();
@@ -97,25 +115,36 @@ public class Match : AuditableEntity
 
         public int SecondsRemaining(PlayerSide side, DateTimeOffset utcNow)
         {
-            if (StartedAt is null || Status is MatchStatus.Waiting)
-                return MatchLengthSeconds;
-
-            var elapsed = (int)Math.Floor((utcNow - StartedAt.Value).TotalSeconds);
+            var bank = side == PlayerSide.Light ? LightSecondsLeft : DarkSecondsLeft;
             var penalty = side == PlayerSide.Light ? LightTimePenaltySeconds : DarkTimePenaltySeconds;
-            return Math.Max(0, MatchLengthSeconds - elapsed - penalty);
+            var running = Status == MatchStatus.InProgress
+                && side == CurrentTurn
+                && TurnStartedAt is not null;
+            var spent = running
+                ? (int)Math.Floor((utcNow - TurnStartedAt!.Value).TotalSeconds)
+                : 0;
+            return Math.Max(0, bank - penalty - spent);
         }
 
-        public void SeatDark(string seatToken)
+        public void SeatDark(string seatToken) => SeatGuest(seatToken);
+
+        /// <summary>Boş koltuğa oturtur. Kuran koyu seçtiyse gelen oyuncu açık tarafa geçer.</summary>
+        public void SeatGuest(string seatToken)
         {
             if (Status != MatchStatus.Waiting)
-                throw new DomainException("Bu masada koyu koltuk dolu.", "Match.SeatTaken");
+                throw new DomainException("Bu masada koltuk dolu.", "Match.SeatTaken");
 
             if (string.IsNullOrWhiteSpace(seatToken))
                 throw new DomainException("Koltuk anahtarı boş olamaz.", "Match.SeatTokenRequired");
 
-            DarkSeatToken = seatToken;
+            if (HostPlaysDark)
+                LightSeatToken = seatToken;
+            else
+                DarkSeatToken = seatToken;
+
             Status = MatchStatus.InProgress;
             StartedAt = DateTimeOffset.UtcNow;
+            TurnStartedAt = StartedAt;
             TurnDeadlineUtc = StartedAt.Value.AddSeconds(45);
         }
 
@@ -157,7 +186,8 @@ public class Match : AuditableEntity
         PlayerSide side,
         BoardPosition position,
         TileDefinition tile,
-        PerkType? perk = null)
+        PerkType? perk = null,
+        DateTimeOffset? utcNow = null)
     {
         ArgumentNullException.ThrowIfNull(tile);
         EnsureCanAct(side);
@@ -198,7 +228,7 @@ public class Match : AuditableEntity
             ResolveCaptures(cell, position, side);
 
         RevealOwnFaceDownTiles(side, position);
-        AdvanceTurn();
+        AdvanceTurn(utcNow);
     }
 
     public void UsePerk(PlayerSide side, PerkType perk)
@@ -272,7 +302,7 @@ public class Match : AuditableEntity
         }
     }
 
-    private void AdvanceTurn()
+    private void AdvanceTurn(DateTimeOffset? utcNow = null)
     {
         var light = Score(PlayerSide.Light);
         var dark = Score(PlayerSide.Dark);
@@ -284,9 +314,31 @@ public class Match : AuditableEntity
                     return;
                 }
 
+                PassTurn(utcNow ?? DateTimeOffset.UtcNow);
+            }
+
+            private void PassTurn(DateTimeOffset utcNow)
+            {
+                BankRunningClock(utcNow);
                 CurrentTurn = CurrentTurn == PlayerSide.Light ? PlayerSide.Dark : PlayerSide.Light;
-                if (StartedAt is not null)
-                    TurnDeadlineUtc = DateTimeOffset.UtcNow.AddSeconds(45);
+                TurnStartedAt = utcNow;
+                TurnDeadlineUtc = utcNow.AddSeconds(45);
+            }
+
+            /// <summary>Hamle biten tarafın akan saniyelerini bankasına yazar. Rakibin saati hiç dokunulmaz.</summary>
+            private void BankRunningClock(DateTimeOffset utcNow)
+            {
+                if (TurnStartedAt is null || Status != MatchStatus.InProgress)
+                    return;
+
+                var spent = (int)Math.Floor((utcNow - TurnStartedAt.Value).TotalSeconds);
+                if (spent <= 0)
+                    return;
+
+                if (CurrentTurn == PlayerSide.Light)
+                    LightSecondsLeft = Math.Max(0, LightSecondsLeft - spent);
+                else
+                    DarkSecondsLeft = Math.Max(0, DarkSecondsLeft - spent);
             }
 
             private void FinishByScore()

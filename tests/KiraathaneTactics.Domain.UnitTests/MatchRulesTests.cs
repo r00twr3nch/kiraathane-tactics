@@ -296,11 +296,29 @@ public class MatchRulesTests
     }
 
     [Fact]
+    public void Only_the_side_to_move_spends_time_and_a_move_freezes_that_clock()
+    {
+        var match = new Match();
+        var opened = match.TurnStartedAt!.Value;
+        var afterLightThinks = opened.AddSeconds(20);
+
+        match.SecondsRemaining(PlayerSide.Light, afterLightThinks).Should().Be(190);
+        match.SecondsRemaining(PlayerSide.Dark, afterLightThinks).Should().Be(210);
+
+        match.PlaceTile(PlayerSide.Light, At(2, 2), Card("Çay", 3, north: 2), utcNow: afterLightThinks);
+
+        var afterDarkThinks = afterLightThinks.AddSeconds(10);
+        match.CurrentTurn.Should().Be(PlayerSide.Dark);
+        match.SecondsRemaining(PlayerSide.Light, afterDarkThinks).Should().Be(190);
+        match.SecondsRemaining(PlayerSide.Dark, afterDarkThinks).Should().Be(200);
+    }
+
+    [Fact]
     public void Clock_expiry_on_the_current_side_awards_the_other_side()
     {
         var match = new Match();
         match.UsePerk(PlayerSide.Light, PerkType.LafEbeligi);
-        var later = match.StartedAt!.Value.AddSeconds(Match.MatchLengthSeconds - Match.LafEbeligiPenaltySeconds);
+        var later = match.StartedAt!.Value.AddSeconds(Match.DefaultMatchLengthSeconds - Match.LafEbeligiPenaltySeconds);
 
         match.ApplyClock(later);
 

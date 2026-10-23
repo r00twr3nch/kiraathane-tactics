@@ -264,8 +264,6 @@ function render() {
   const mine = state.seat?.Side === "Dark" ? match.DarkPerkCharges : match.LightPerkCharges;
   document.querySelectorAll(".perk").forEach((button) => {
     button.classList.toggle("selected", button.dataset.perk === state.selectedPerk);
-    const count = button.querySelector("em");
-    if (count) count.textContent = `×${mine}`;
     button.disabled = mine === 0 || match.Status !== "InProgress";
   });
 }
@@ -545,9 +543,17 @@ function paintSide(side, score, charges, active) {
 function paintClocks() {
   const match = state.match;
   if (!match) return;
-  const drift = match.receivedAt ? Math.floor((Date.now() - match.receivedAt) / 1000) : 0;
-  document.querySelector("#clock-light").textContent = formatClock(Math.max(0, match.LightSecondsRemaining - drift));
-  document.querySelector("#clock-dark").textContent = formatClock(Math.max(0, match.DarkSecondsRemaining - drift));
+  const drift = match.receivedAt && match.Status === "InProgress"
+    ? Math.max(0, Math.floor((Date.now() - match.receivedAt) / 1000))
+    : 0;
+  const light = match.CurrentTurn === "Light"
+    ? Math.max(0, match.LightSecondsRemaining - drift)
+    : match.LightSecondsRemaining;
+  const dark = match.CurrentTurn === "Dark"
+    ? Math.max(0, match.DarkSecondsRemaining - drift)
+    : match.DarkSecondsRemaining;
+  document.querySelector("#clock-light").textContent = formatClock(light);
+  document.querySelector("#clock-dark").textContent = formatClock(dark);
 }
 
 function formatClock(total) {

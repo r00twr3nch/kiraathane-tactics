@@ -5,8 +5,10 @@ const queueCode = document.querySelector("#queue-code");
 const findButton = document.querySelector("#find-rival");
 const botButton = document.querySelector("#play-bot");
 const hostButton = document.querySelector("#host-room");
-const hostCode = document.querySelector("#host-code");
 const joinForm = document.querySelector("#join-room");
+const tableForm = document.querySelector("#table-form");
+const clockRange = document.querySelector("#match-length");
+const clockReadout = document.querySelector("#clock-readout");
 const board = document.querySelector("#leaderboard");
 
 const BOARD_KEY = "kiraathane-wall";
@@ -14,10 +16,10 @@ let polling = null;
 let offered = null;
 
 if (board) renderBoard();
+if (tableForm) bindTableForm();
 
 findButton?.addEventListener("click", () => findRival().catch(fail));
 botButton?.addEventListener("click", () => playBot().catch(fail));
-hostButton?.addEventListener("click", () => hostRoom().catch(fail));
 joinForm?.addEventListener("submit", (event) => {
   event.preventDefault();
   joinRoom(new FormData(joinForm).get("roomCode")).catch(fail);
@@ -75,14 +77,35 @@ async function watchTable(seat) {
   goPlay(seat);
 }
 
-async function hostRoom() {
+function bindTableForm() {
+  const paint = () => {
+    const minutes = Number(clockRange.value);
+    const seconds = String((minutes % 1) * 60).padStart(2, "0");
+    clockReadout.textContent = `${Math.floor(minutes)}:${seconds}`;
+  };
+  clockRange.addEventListener("input", paint);
+  paint();
+  tableForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const data = new FormData(tableForm);
+    hostRoom({
+      color: data.get("color"),
+      opening: data.get("opening"),
+      minutes: Number(clockRange.value)
+    }).catch(fail);
+  });
+}
+
+async function hostRoom(settings) {
   setBusy(true);
   note.textContent = "Oda kuruluyor.";
-  const seat = await api("/api/matches/rooms", { method: "POST" });
-  hostCode.hidden = false;
-  hostCode.textContent = seat.RoomCode;
-  note.textContent = "Kod hazır. Arkadaşın katılınca oyun açılır.";
-  polling = window.setInterval(() => watchTable(seat).catch(fail), 2000);
+  const hostDark = settings.color === "Dark";
+  let opening = "";
+  if (settings.opening === "host") opening = `&openingSide=${hostDark ? "Dark" : "Light"}`;
+  if (settings.opening === "guest") opening = `&openingSide=${hostDark ? "Light" : "Dark"}`;
+  const seat = await api(`/api/matches/rooms?matchMinutes=${settings.minutes}&hostColor=${settings.color}${opening}`, { method: "POST" });
+  sessionStorage.setItem("kiraathane-seat", JSON.stringify(seat));
+  window.location.href = `/play/index.html?v=33&from=landing`;
 }
 
 async function joinRoom(code) {

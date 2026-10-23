@@ -36,6 +36,7 @@ public sealed class ApplicationDbContextInitializer(
                 await EnsureBoardCellWeightColumnAsync(cancellationToken);
                 await EnsureBoardCellPlacedByColumnAsync(cancellationToken);
                 await EnsureMatchWalkoverColumnAsync(cancellationToken);
+                await EnsureMatchClockBankColumnsAsync(cancellationToken);
             }
             else if ((await context.Database.GetPendingMigrationsAsync(cancellationToken)).Any())
             {
@@ -132,6 +133,54 @@ public sealed class ApplicationDbContextInitializer(
             if (!wasOpen)
                 await connection.CloseAsync();
         }
+    }
+
+    /// <summary>Satranç saati: her tarafın kendi bankası ve sıranın başladığı an.</summary>
+    private async Task EnsureMatchClockBankColumnsAsync(CancellationToken cancellationToken)
+    {
+        var connection = context.Database.GetDbConnection();
+        var wasOpen = connection.State == System.Data.ConnectionState.Open;
+        if (!wasOpen)
+            await connection.OpenAsync(cancellationToken);
+
+        try
+        {
+            await using var command = connection.CreateCommand();
+            await AddMatchColumnIfMissingAsync(connection, "LightSecondsLeft", """INTEGER NOT NULL DEFAULT 210""", cancellationToken);
+            await AddMatchColumnIfMissingAsync(connection, "DarkSecondsLeft", """INTEGER NOT NULL DEFAULT 210""", cancellationToken);
+            await AddMatchColumnIfMissingAsync(connection, "TurnStartedAt", "TEXT NULL", cancellationToken);
+            await AddMatchColumnIfMissingAsync(connection, "MatchLengthSeconds", """INTEGER NOT NULL DEFAULT 210""", cancellationToken);
+            await AddMatchColumnIfMissingAsync(connection, "HostPlaysDark", """INTEGER NOT NULL DEFAULT 0""", cancellationToken);
+            await context.Database.ExecuteSqlRawAsync(
+                """UPDATE "Matches" SET "TurnStartedAt" = "StartedAt" WHERE "TurnStartedAt" IS NULL AND "StartedAt" IS NOT NULL;""",
+                cancellationToken);
+        }
+        finally
+        {
+            if (!wasOpen)
+                await connection.CloseAsync();
+        }
+    }
+
+    private async Task AddMatchColumnIfMissingAsync(
+        System.Data.Common.DbConnection connection,
+        string column,
+        string definition,
+        CancellationToken cancellationToken)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT COUNT(*) FROM pragma_table_info('Matches') WHERE name = $name";
+        var parameter = command.CreateParameter();
+        parameter.ParameterName = "$name";
+        parameter.Value = column;
+        command.Parameters.Add(parameter);
+        var exists = Convert.ToInt32(await command.ExecuteScalarAsync(cancellationToken)) > 0;
+        if (exists)
+            return;
+
+        await context.Database.ExecuteSqlRawAsync(
+            $"""ALTER TABLE "Matches" ADD COLUMN "{column}" {definition};""",
+            cancellationToken);
     }
 
     private async Task SeedAsync(CancellationToken cancellationToken)

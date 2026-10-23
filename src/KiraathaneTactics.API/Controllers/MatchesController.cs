@@ -23,9 +23,11 @@ public sealed class MatchesController(ISender sender, IOnlineQueue queue) : ApiC
     /// <summary>Oda kodu üretir ve Light koltuğunu ayırır. İlk sıra yazı turadır; bot masasında Light başlar.</summary>
     [HttpPost("rooms")]
     [ProducesResponseType(typeof(ApiResponse<SeatDto>), StatusCodes.Status201Created)]
-    public async Task<IActionResult> OpenRoom([FromQuery] PlayerSide? openingSide, CancellationToken cancellationToken)
+    public async Task<IActionResult> OpenRoom([FromQuery] PlayerSide? openingSide, [FromQuery] double? matchMinutes, [FromQuery] string? hostColor, CancellationToken cancellationToken)
     {
-        var result = await Sender.Send(new OpenRoomCommand(openingSide), cancellationToken);
+        int? length = matchMinutes is null ? null : (int)Math.Round(matchMinutes.Value * 60);
+        var hostPlaysDark = string.Equals(hostColor, "Dark", StringComparison.OrdinalIgnoreCase);
+        var result = await Sender.Send(new OpenRoomCommand(openingSide, length, hostPlaysDark), cancellationToken);
         return HandleCreated(result, nameof(GetState), new { id = result.IsSuccess ? result.Value.MatchId : Guid.Empty });
     }
 

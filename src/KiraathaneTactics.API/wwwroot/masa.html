@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Masa ayarı — Kıraathane Tactics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,680&family=Outfit:wght@400;500;650&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="landing.css?v=33" />
+</head>
+<body class="page-play">
+  <div class="room" aria-hidden="true">
+    <div class="lamp"></div>
+    <div class="haze"></div>
+  </div>
+  <header class="top">
+    <a class="brand" href="/index.html">Kıraathane</a>
+    <nav class="desk-nav" aria-label="Sayfa">
+      <a href="/siralama.html">Sıralama</a>
+      <a href="/kurallar.html">Kurallar</a>
+      <a href="/oyna.html" aria-current="page">Oyna</a>
+    </nav>
+  </header>
+  <main>
+    <section class="panel play-panel table-sheet" aria-labelledby="table-title">
+      <header class="sheet-head">
+        <p class="sheet-mark">Masa ayarı</p>
+        <h1 id="table-title">Masayı kur</h1>
+        <p class="lede">Süreni ve rengini seç. Kod, arkadaşın oturunca oyunda görünür.</p>
+      </header>
+      <form id="table-form" class="table-form">
+        <fieldset class="levels">
+          <legend>Senin rengin</legend>
+          <div class="swatches">
+            <label><input type="radio" name="color" value="Light" checked /><i class="swatch light" aria-hidden="true"></i> Açık</label>
+            <label><input type="radio" name="color" value="Dark" /><i class="swatch dark" aria-hidden="true"></i> Koyu</label>
+          </div>
+        </fieldset>
+        <fieldset class="levels">
+          <legend>İlk hamle</legend>
+          <div class="swatches">
+            <label><input type="radio" name="opening" value="host" checked /> Sen</label>
+            <label><input type="radio" name="opening" value="guest" /> Rakip</label>
+            <label><input type="radio" name="opening" value="coin" /><i class="swatch coin" aria-hidden="true"></i> Yazı tura</label>
+          </div>
+        </fieldset>
+        <label class="clock-field">
+          <span class="levels legend">Hamle saati</span>
+          <strong class="clock-readout" id="clock-readout">3:30</strong>
+          <input id="match-length" name="minutes" type="range" min="1" max="10" step="0.5" value="3.5" aria-valuemin="1" aria-valuemax="10" />
+          <span class="clock-ends" aria-hidden="true"><span>1:00</span><span>10:00</span></span>
+        </label>
+        <div class="table-actions">
+          <button type="submit" class="cta slab">Masayı aç</button>
+          <a class="back" href="/oyna.html">Vazgeç</a>
+        </div>
+      </form>
+      <p class="note" id="queue-note" role="status"></p>
+    </section>
+  </main>
+  <nav class="dock" aria-label="Masa">
+    <a href="/siralama.html"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 20h10M8 16h8l1.2-7H6.8z"/><path d="M9 9c0-2.4 1.2-4 3-4s3 1.6 3 4"/></svg>Sıralama</a>
+    <a href="/oyna.html" class="dock-play" aria-current="page"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="2.5"/><path d="M9 9h6M15 16h.01"/></svg>Oyna</a>
+    <a href="/kurallar.html"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5.5h12v14H6z"/><path d="M9 9h6M9 12.5h6M9 16h4"/></svg>Kurallar</a>
+  </nav>
+  <script src="landing.js?v=13"></script>
+</body>
+</html>

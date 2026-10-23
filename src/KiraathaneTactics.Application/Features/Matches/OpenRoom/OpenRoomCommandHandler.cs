@@ -14,9 +14,16 @@ public sealed class OpenRoomCommandHandler(
 {
     public async Task<Result<SeatDto>> Handle(OpenRoomCommand request, CancellationToken cancellationToken)
     {
-        var match = Match.OpenWaitingRoom(RoomCodeFactory.Create(), RoomCodeFactory.SeatToken(), request.OpeningSide);
+        var match = Match.OpenWaitingRoom(
+            RoomCodeFactory.Create(),
+            RoomCodeFactory.SeatToken(),
+            request.OpeningSide,
+            request.MatchLengthSeconds,
+            request.HostPlaysDark);
         await matches.AddAsync(match, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
-        return new SeatDto(match.Id, match.RoomCode, PlayerSide.Light, match.LightSeatToken!);
+        var side = request.HostPlaysDark ? PlayerSide.Dark : PlayerSide.Light;
+        var token = request.HostPlaysDark ? match.DarkSeatToken! : match.LightSeatToken!;
+        return new SeatDto(match.Id, match.RoomCode, side, token);
     }
 }

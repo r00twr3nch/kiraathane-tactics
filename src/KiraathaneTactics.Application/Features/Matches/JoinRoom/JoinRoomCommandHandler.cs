@@ -26,6 +26,7 @@ public sealed class JoinRoomCommandHandler(
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
         await notifier.PublishAsync(match.ToDto(), cancellationToken);
-        return new SeatDto(match.Id, match.RoomCode, PlayerSide.Dark, token);
+        var guest = match.HostPlaysDark ? PlayerSide.Light : PlayerSide.Dark;
+        return new SeatDto(match.Id, match.RoomCode, guest, token);
     }
 }
