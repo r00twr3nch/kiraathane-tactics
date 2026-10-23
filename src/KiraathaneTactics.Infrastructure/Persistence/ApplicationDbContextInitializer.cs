@@ -37,6 +37,9 @@ public sealed class ApplicationDbContextInitializer(
                 await EnsureBoardCellPlacedByColumnAsync(cancellationToken);
                 await EnsureMatchWalkoverColumnAsync(cancellationToken);
                 await EnsureMatchClockBankColumnsAsync(cancellationToken);
+                await EnsureMatchVersusBotColumnAsync(cancellationToken);
+                await EnsureWallTableAsync(cancellationToken);
+                await EnsureRegisteredNameColumnAsync(cancellationToken);
             }
             else if ((await context.Database.GetPendingMigrationsAsync(cancellationToken)).Any())
             {
@@ -162,6 +165,113 @@ public sealed class ApplicationDbContextInitializer(
         }
     }
 
+    /// <summary>EnsureCreated mevcut dosyaya VersusBot eklemez. Çaycı masaları bu sütunla duvardan düşer.</summary>
+    private async Task EnsureMatchVersusBotColumnAsync(CancellationToken cancellationToken)
+    {
+        var connection = context.Database.GetDbConnection();
+        var wasOpen = connection.State == System.Data.ConnectionState.Open;
+        if (!wasOpen)
+            await connection.OpenAsync(cancellationToken);
+
+        try
+        {
+            await AddMatchColumnIfMissingAsync(connection, "VersusBot", """INTEGER NOT NULL DEFAULT 0""", cancellationToken);
+        }
+        finally
+        {
+            if (!wasOpen)
+                await connection.CloseAsync();
+        }
+    }
+
+    /// <summary>Duvar tablosu sonradan geldi. Mevcut SQLite dosyası migration uygulamaz.</summary>
+    private async Task EnsureWallTableAsync(CancellationToken cancellationToken)
+    {
+        await context.Database.ExecuteSqlRawAsync(
+            """
+            CREATE TABLE IF NOT EXISTS "WallEntries" (
+                "Id" TEXT NOT NULL CONSTRAINT "PK_WallEntries" PRIMARY KEY,
+                "MatchId" TEXT NOT NULL,
+                "Name" TEXT NOT NULL,
+                "Wins" INTEGER NOT NULL,
+                "Draws" INTEGER NOT NULL,
+                "Losses" INTEGER NOT NULL,
+                "SignedAt" TEXT NOT NULL
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS "IX_WallEntries_MatchId_Name" ON "WallEntries" ("MatchId", "Name");
+            CREATE INDEX IF NOT EXISTS "IX_WallEntries_SignedAt" ON "WallEntries" ("SignedAt");
+            """,
+            cancellationToken);
+        await AddWallColumnIfMissingAsync("UserId", "TEXT NULL", cancellationToken);
+        await context.Database.ExecuteSqlRawAsync(
+            """CREATE UNIQUE INDEX IF NOT EXISTS "IX_WallEntries_MatchId_UserId" ON "WallEntries" ("MatchId", "UserId");""",
+            cancellationToken);
+    }
+
+    /// <summary>İlk kapı adı. Eski hesaplarda o anki duvar adından bir kez doldurulur.</summary>
+    private async Task EnsureRegisteredNameColumnAsync(CancellationToken cancellationToken)
+    {
+        var connection = context.Database.GetDbConnection();
+        var wasOpen = connection.State == System.Data.ConnectionState.Open;
+        if (!wasOpen)
+            await connection.OpenAsync(cancellationToken);
+
+        try
+        {
+            await using var command = connection.CreateCommand();
+            command.CommandText = "SELECT COUNT(*) FROM pragma_table_info('Users') WHERE name = 'RegisteredName'";
+            var exists = Convert.ToInt32(await command.ExecuteScalarAsync(cancellationToken)) > 0;
+            if (!exists)
+            {
+                await context.Database.ExecuteSqlRawAsync(
+                    """ALTER TABLE "Users" ADD COLUMN "RegisteredName" TEXT NOT NULL DEFAULT '';""",
+                    cancellationToken);
+            }
+
+            await context.Database.ExecuteSqlRawAsync(
+                """UPDATE "Users" SET "RegisteredName" = "FullName" WHERE "RegisteredName" = '';""",
+                cancellationToken);
+        }
+        finally
+        {
+            if (!wasOpen)
+                await connection.CloseAsync();
+        }
+    }
+
+    private async Task AddWallColumnIfMissingAsync(
+        string column,
+        string definition,
+        CancellationToken cancellationToken)
+    {
+        var connection = context.Database.GetDbConnection();
+        var wasOpen = connection.State == System.Data.ConnectionState.Open;
+        if (!wasOpen)
+            await connection.OpenAsync(cancellationToken);
+
+        try
+        {
+            await using var command = connection.CreateCommand();
+            command.CommandText = "SELECT COUNT(*) FROM pragma_table_info('WallEntries') WHERE name = $name";
+            var parameter = command.CreateParameter();
+            parameter.ParameterName = "$name";
+            parameter.Value = column;
+            command.Parameters.Add(parameter);
+            var exists = Convert.ToInt32(await command.ExecuteScalarAsync(cancellationToken)) > 0;
+            if (exists)
+                return;
+
+            await context.Database.ExecuteSqlRawAsync(
+                $"""ALTER TABLE "WallEntries" ADD COLUMN "{column}" {definition};""",
+                cancellationToken);
+        }
+        finally
+        {
+            if (!wasOpen)
+                await connection.CloseAsync();
+        }
+    }
+
     private async Task AddMatchColumnIfMissingAsync(
         System.Data.Common.DbConnection connection,
         string column,
@@ -201,6 +311,7 @@ public sealed class ApplicationDbContextInitializer(
         {
             Email = "admin@kiraathane.local",
             FullName = "System Admin",
+            RegisteredName = "System Admin",
             Role = UserRole.Admin,
             PasswordHash = passwordHasher.Hash("Admin123!")
         };

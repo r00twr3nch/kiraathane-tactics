@@ -8,6 +8,9 @@ using KiraathaneTactics.Application.Features.Matches.JoinRoom;
 using KiraathaneTactics.Application.Features.Matches.OpenRoom;
 using KiraathaneTactics.Application.Features.Matches.PlaceTile;
 using KiraathaneTactics.Application.Features.Matches.UsePerk;
+using KiraathaneTactics.Application.Features.Wall;
+using KiraathaneTactics.Application.Features.Wall.GetWall;
+using KiraathaneTactics.Application.Features.Wall.SignWall;
 using KiraathaneTactics.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,11 +26,11 @@ public sealed class MatchesController(ISender sender, IOnlineQueue queue) : ApiC
     /// <summary>Oda kodu üretir ve Light koltuğunu ayırır. İlk sıra yazı turadır; bot masasında Light başlar.</summary>
     [HttpPost("rooms")]
     [ProducesResponseType(typeof(ApiResponse<SeatDto>), StatusCodes.Status201Created)]
-    public async Task<IActionResult> OpenRoom([FromQuery] PlayerSide? openingSide, [FromQuery] double? matchMinutes, [FromQuery] string? hostColor, CancellationToken cancellationToken)
+    public async Task<IActionResult> OpenRoom([FromQuery] PlayerSide? openingSide, [FromQuery] double? matchMinutes, [FromQuery] string? hostColor, [FromQuery] bool versusBot = false, CancellationToken cancellationToken = default)
     {
         int? length = matchMinutes is null ? null : (int)Math.Round(matchMinutes.Value * 60);
         var hostPlaysDark = string.Equals(hostColor, "Dark", StringComparison.OrdinalIgnoreCase);
-        var result = await Sender.Send(new OpenRoomCommand(openingSide, length, hostPlaysDark), cancellationToken);
+        var result = await Sender.Send(new OpenRoomCommand(openingSide, length, hostPlaysDark, versusBot), cancellationToken);
         return HandleCreated(result, nameof(GetState), new { id = result.IsSuccess ? result.Value.MatchId : Guid.Empty });
     }
 
@@ -120,6 +123,30 @@ public sealed class MatchesController(ISender sender, IOnlineQueue queue) : ApiC
     public async Task<IActionResult> UsePerk(
         Guid id,
         [FromBody] UsePerkCommand command,
+        CancellationToken cancellationToken)
+    {
+        if (id != command.MatchId)
+            return ErrorResponse(StatusCodes.Status400BadRequest,
+                "Route'taki id ile gövdedeki matchId uyuşmuyor.", "IdMismatch");
+
+        return HandleResult(await Sender.Send(command, cancellationToken));
+    }
+
+    /// <summary>Müessesenin duvarı. Çaycı maçları burada yoktur.</summary>
+    [HttpGet("wall")]
+    [ProducesResponseType(typeof(ApiResponse<WallDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Wall(CancellationToken cancellationToken)
+        => HandleResult(await Sender.Send(new GetWallQuery(), cancellationToken));
+
+    /// <summary>Biten insan maçından duvara bir isim yazar. Aynı isim aynı maça iki kez yazılmaz.</summary>
+    [HttpPost("{id:guid}/wall")]
+    [ProducesResponseType(typeof(ApiResponse<WallDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> SignWall(
+        Guid id,
+        [FromBody] SignWallCommand command,
         CancellationToken cancellationToken)
     {
         if (id != command.MatchId)

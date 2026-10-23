@@ -13,4 +13,7 @@ public static class AuthenticationErrors
 
     public static readonly Error UserInactive =
         Error.Forbidden("Auth.UserInactive", "Hesabınız pasif durumda.");
+
+    public static readonly Error NotSignedIn =
+        Error.Unauthorized("Auth.NotSignedIn", "Önce kapıdan içeri gir.");
 }

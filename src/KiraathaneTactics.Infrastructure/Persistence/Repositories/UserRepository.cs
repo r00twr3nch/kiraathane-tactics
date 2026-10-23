@@ -12,4 +12,9 @@ public sealed class UserRepository(ApplicationDbContext context)
 
     public async Task<bool> EmailExistsAsync(string email, CancellationToken cancellationToken = default)
         => await Set.AnyAsync(u => u.Email == email, cancellationToken);
+
+    public Task RenameWallAsync(Guid userId, string name, CancellationToken cancellationToken = default)
+        => Context.Set<WallEntry>()
+            .Where(entry => entry.UserId == userId && entry.Name != name)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(entry => entry.Name, name), cancellationToken);
 }

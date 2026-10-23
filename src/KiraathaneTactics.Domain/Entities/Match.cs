@@ -50,6 +50,8 @@ public class Match : AuditableEntity
         public bool Walkover { get; private set; }
         /// <summary>Odayı kuran koyu rengi seçtiyse true. Gelen oyuncu o zaman açık koltuğa oturur.</summary>
         public bool HostPlaysDark { get; private set; }
+        /// <summary>Koyu koltuk çaycıya aitse true. Bu masalar duvara yazılmaz.</summary>
+        public bool VersusBot { get; private set; }
 
     public IReadOnlyCollection<BoardCell> Cells => _cells;
     public IReadOnlyCollection<MatchEvent> DomainEvents => _events;
@@ -72,7 +74,7 @@ public class Match : AuditableEntity
             AllocateBoard();
         }
 
-        public static Match OpenWaitingRoom(string roomCode, string hostSeatToken, PlayerSide? openingSide = null, int? matchLengthSeconds = null, bool hostPlaysDark = false)
+        public static Match OpenWaitingRoom(string roomCode, string hostSeatToken, PlayerSide? openingSide = null, int? matchLengthSeconds = null, bool hostPlaysDark = false, bool versusBot = false)
         {
             if (string.IsNullOrWhiteSpace(roomCode))
                 throw new DomainException("Oda kodu boş olamaz.", "Match.RoomCodeRequired");
@@ -96,6 +98,7 @@ public class Match : AuditableEntity
                 LightSecondsLeft = length,
                 DarkSecondsLeft = length,
                 HostPlaysDark = hostPlaysDark,
+                VersusBot = versusBot,
                 CurrentTurn = openingSide ?? (Random.Shared.Next(2) == 0 ? PlayerSide.Light : PlayerSide.Dark)
             };
             match.AllocateBoard();

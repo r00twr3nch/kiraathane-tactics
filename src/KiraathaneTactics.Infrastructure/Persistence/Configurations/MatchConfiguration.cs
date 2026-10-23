@@ -20,6 +20,7 @@ public sealed class MatchConfiguration : IEntityTypeConfiguration<Match>
                 builder.Property(m => m.LightSeatToken).HasMaxLength(64);
                 builder.Property(m => m.DarkSeatToken).HasMaxLength(64);
                 builder.Property(m => m.Walkover).HasDefaultValue(false);
+                builder.Property(m => m.VersusBot).HasDefaultValue(false);
 
                 builder.Ignore(m => m.Cells);
         builder.Ignore(m => m.DomainEvents);

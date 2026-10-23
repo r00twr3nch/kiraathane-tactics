@@ -19,7 +19,8 @@ public sealed class OpenRoomCommandHandler(
             RoomCodeFactory.SeatToken(),
             request.OpeningSide,
             request.MatchLengthSeconds,
-            request.HostPlaysDark);
+            request.HostPlaysDark,
+            request.VersusBot);
         await matches.AddAsync(match, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
         var side = request.HostPlaysDark ? PlayerSide.Dark : PlayerSide.Light;

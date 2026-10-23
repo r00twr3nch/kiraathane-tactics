@@ -16,6 +16,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<Product> Products => Set<Product>();
     public DbSet<Match> Matches => Set<Match>();
     public DbSet<TileDefinition> TileDefinitions => Set<TileDefinition>();
+    public DbSet<WallEntry> WallEntries => Set<WallEntry>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

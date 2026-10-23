@@ -11,6 +11,8 @@ public sealed record AuthenticationResponse(
     Guid UserId,
     string Email,
     string FullName,
+    string RegisteredName,
+    DateTimeOffset MemberSince,
     string Role,
     string AccessToken,
     DateTimeOffset ExpiresAt);

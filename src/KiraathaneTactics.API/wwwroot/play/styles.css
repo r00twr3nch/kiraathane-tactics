@@ -810,6 +810,44 @@ body.in-match .lobby { display: none; }
   animation: score-pop 480ms 560ms both;
 }
 
+.curtain-sign {
+  display: grid;
+  gap: 8px;
+  width: min(280px, 100%);
+  margin: 18px auto 0;
+  text-align: left;
+}
+.curtain-sign[hidden] { display: none; }
+.curtain-sign label {
+  color: #f6e7cf;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+}
+.curtain-sign input {
+  min-height: 48px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 14px;
+  background: #fffdf8;
+  color: var(--ink);
+  font: inherit;
+}
+.curtain-sign button {
+  min-height: 46px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--brass);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.curtain-sign p {
+  margin: 0;
+  color: #f6e7cf;
+  text-align: center;
+}
+.curtain-sign a { color: var(--brass); }
 .curtain-actions {
   display: flex;
   flex-wrap: wrap;

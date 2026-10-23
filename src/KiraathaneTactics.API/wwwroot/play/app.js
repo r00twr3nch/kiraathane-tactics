@@ -70,7 +70,7 @@ async function restartMatch() {
   state.selectedPerk = null;
   state.previousOwners = new Map();
   if (bot) {
-    const light = await api("/api/matches/rooms?openingSide=Light", { method: "POST" });
+    const light = await api("/api/matches/rooms?openingSide=Light&versusBot=true", { method: "POST" });
     const dark = await api("/api/matches/rooms/join", {
       method: "POST",
       body: JSON.stringify({ roomCode: light.RoomCode })
@@ -353,7 +353,6 @@ function applyMatch(next, fromPlacement) {
   render();
   rememberOwners();
   state.selectedPerk = null;
-  recordWall(next);
   showCurtain(next);
   if (state.bot && next.Status === "InProgress" && next.CurrentTurn === state.bot.side) {
     window.setTimeout(() => botMove().catch((error) => setStatus(error.message, true)), 700);
@@ -476,6 +475,7 @@ function showCurtain(match) {
   document.querySelector("#curtain-title").textContent = lines[0];
   document.querySelector("#curtain-line").textContent = lines[1];
   document.querySelector("#curtain-score").textContent = `${match.LightScore} – ${match.DarkScore}`;
+  bindWallSign(match);
   const again = document.querySelector("#curtain-again");
   again.onclick = () => {
     again.disabled = true;
@@ -486,25 +486,45 @@ function showCurtain(match) {
   window.setTimeout(() => again.focus(), reducedMotion() ? 0 : 540);
 }
 
-function recordWall(match) {
-  if (match.Status !== "Completed" && match.Status !== "Draw") return;
-  if (state.recordedMatch === match.Id) return;
-  state.recordedMatch = match.Id;
-  const won = match.Winner === state.seat?.Side;
-  const name = state.bot ? (won ? "Sen" : "Çaycı") : (state.seat?.Side === "Light" ? "Açık" : "Koyu");
-  const detail = match.Status === "Draw"
-    ? "Berabere"
-    : `${match.LightScore}–${match.DarkScore}`;
-  const rows = JSON.parse(localStorage.getItem("kiraathane-wall") || "[]")
-    .filter((row) => row.matchId !== match.Id);
-  rows.unshift({
-    matchId: match.Id,
-    name,
-    detail,
-    score: match.Status === "Draw" ? "½" : String(Math.max(match.LightScore, match.DarkScore)),
-    at: Date.now()
+function bindWallSign(match) {
+  const form = document.querySelector("#curtain-sign");
+  const signed = document.querySelector("#curtain-signed");
+  if (!form) return;
+  const human = !state.bot && (match.Status === "Completed" || match.Status === "Draw");
+  form.hidden = !human;
+  signed.hidden = true;
+  if (!human) return;
+  const account = readAccount();
+  if (!signed) return;
+  if (!account) {
+    signed.hidden = false;
+    signed.innerHTML = `Duvara yazılmak için <a href="/kapi.html">kapıdan gir</a>. Çaycı masası yine sayılmaz.`;
+    return;
+  }
+  signed.hidden = false;
+  signed.textContent = "Duvara yazılıyor…";
+  api(`/api/matches/${match.Id}/wall`, {
+    method: "POST",
+    body: JSON.stringify({
+      matchId: match.Id,
+      seatToken: state.seat.SeatToken,
+      name: account.FullName
+    })
+  }).then(() => {
+    signed.textContent = `${account.FullName} duvara yazıldı.`;
+  }).catch((error) => {
+    signed.textContent = error.message;
   });
-  localStorage.setItem("kiraathane-wall", JSON.stringify(rows.slice(0, 12)));
+}
+
+function readAccount() {
+  try {
+    const account = JSON.parse(localStorage.getItem("kiraathane-account") || "null");
+    if (!account?.AccessToken || Date.parse(account.ExpiresAt) <= Date.now()) return null;
+    return account;
+  } catch {
+    return null;
+  }
 }
 
 function rememberOwners() {
@@ -562,8 +582,13 @@ function turnLabel(match) {
 }
 
 async function api(url, options = {}) {
+  const account = readAccount();
   const response = await fetch(url, {
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      ...(account ? { Authorization: `Bearer ${account.AccessToken}` } : {})
+    },
     ...options
   });
   const body = await response.json();

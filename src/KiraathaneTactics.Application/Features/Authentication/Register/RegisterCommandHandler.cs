@@ -22,10 +22,12 @@ public sealed class RegisterCommandHandler(
         if (await userRepository.EmailExistsAsync(email, cancellationToken))
             return AuthenticationErrors.EmailAlreadyExists;
 
+        var name = request.FullName.Trim();
         var user = new User
         {
             Email = email,
-            FullName = request.FullName.Trim(),
+            FullName = name,
+            RegisteredName = name,
             PasswordHash = passwordHasher.Hash(request.Password)
         };
 
@@ -35,7 +37,7 @@ public sealed class RegisterCommandHandler(
         var token = jwtTokenGenerator.Generate(user);
 
         return new AuthenticationResponse(
-            user.Id, user.Email, user.FullName, user.Role.ToString(),
-            token.AccessToken, token.ExpiresAt);
+            user.Id, user.Email, user.FullName, user.RegisteredName, user.CreatedAt,
+            user.Role.ToString(), token.AccessToken, token.ExpiresAt);
     }
 }

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using KiraathaneTactics.Application.Common.Interfaces;
 using KiraathaneTactics.Application.Common.Models;
@@ -98,7 +99,8 @@ public static class DependencyInjection
                     ValidIssuer = settings.Issuer,
                     ValidAudience = settings.Audience,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.Secret)),
-                    ClockSkew = TimeSpan.Zero
+                    ClockSkew = TimeSpan.Zero,
+                    NameClaimType = ClaimTypes.NameIdentifier
                 };
 
                 // 401/403 yanıtlarını da tek tip ApiResponse zarfına çevir (mobil/web tutarlılığı).

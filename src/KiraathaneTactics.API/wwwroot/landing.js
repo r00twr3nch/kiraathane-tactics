@@ -11,12 +11,13 @@ const clockRange = document.querySelector("#match-length");
 const clockReadout = document.querySelector("#clock-readout");
 const board = document.querySelector("#leaderboard");
 
-const BOARD_KEY = "kiraathane-wall";
 let polling = null;
 let offered = null;
 
 if (board) renderBoard();
 if (tableForm) bindTableForm();
+paintAccount();
+document.addEventListener("DOMContentLoaded", paintAccount);
 
 findButton?.addEventListener("click", () => findRival().catch(fail));
 botButton?.addEventListener("click", () => playBot().catch(fail));
@@ -27,16 +28,51 @@ joinForm?.addEventListener("submit", (event) => {
 document.querySelector("#queue-cancel")?.addEventListener("click", cancelQueue);
 
 function renderBoard() {
-  const rows = readBoard();
+  board.innerHTML = `<li class="empty"><b>Duvar bakılıyor</b><span>İsimler masadan geliyor.</span></li>`;
+  api("/api/matches/wall")
+    .then((wall) => paintBoard(wall.Rows || wall.rows || []))
+    .catch(() => {
+      board.innerHTML = `<li class="empty"><b>Duvar kapalı</b><span>Masa şu an cevap vermiyor.</span></li>`;
+    });
+}
+
+function paintBoard(rows) {
+  const podium = document.querySelector("#podium");
   if (!rows.length) {
-    board.innerHTML = `<li class="empty">Duvar boş. İlk maçı bitiren adını buraya yazar.</li>`;
+    if (podium) {
+      podium.hidden = true;
+      podium.replaceChildren();
+    }
+    board.classList.remove("quiet");
+    board.innerHTML = `<li class="empty"><b>Duvar boş</b><span>İlk insan maçını bitiren adını buraya yazar. Çaycı sayılmaz.</span></li>`;
     return;
   }
-  board.replaceChildren(...rows.slice(0, 8).map((row, index) => {
+  const shown = rows.slice(0, 8);
+  if (podium) {
+    podium.hidden = false;
+    const seats = [shown[1], shown[0], shown[2]].filter(Boolean);
+    podium.replaceChildren(...seats.map((row) => {
+      const place = shown.indexOf(row) + 1;
+      const item = document.createElement("li");
+      item.className = `seat seat-${place}`;
+      item.innerHTML = `<span class="medal" aria-hidden="true">${place}</span><strong>${escapeHtml(row.Name || row.name)}</strong><em>${row.Points ?? row.points}</em><small>${wallDetail(row)}</small>`;
+      return item;
+    }));
+  }
+  const rest = shown.slice(3);
+  board.classList.toggle("quiet", rest.length === 0);
+  board.replaceChildren(...rest.map((row, index) => {
     const item = document.createElement("li");
-    item.innerHTML = `<span class="rank">${index + 1}</span><span><strong>${escapeHtml(row.name)}</strong><br />${escapeHtml(row.detail)}</span><span>${row.score}</span>`;
+    item.innerHTML = `<span class="rank">${index + 4}</span><span class="who"><strong>${escapeHtml(row.Name || row.name)}</strong><small>${wallDetail(row)}</small></span><span class="score">${row.Points ?? row.points}</span>`;
     return item;
   }));
+}
+
+function wallDetail(row) {
+  const wins = row.Wins ?? row.wins ?? 0;
+  const draws = row.Draws ?? row.draws ?? 0;
+  const losses = row.Losses ?? row.losses ?? 0;
+  return `${wins} galibiyet · ${draws} beraberlik · ${losses} mağlubiyet`;
 }
 
 async function findRival() {
@@ -126,7 +162,7 @@ async function joinRoom(code) {
 async function playBot() {
   setBusy(true);
   note.textContent = "Çaycı önlüğü bağlıyor.";
-  const light = await api("/api/matches/rooms?openingSide=Light", { method: "POST" });
+  const light = await api("/api/matches/rooms?openingSide=Light&versusBot=true", { method: "POST" });
   const dark = await api("/api/matches/rooms/join", {
     method: "POST",
     body: JSON.stringify({ roomCode: light.RoomCode })
@@ -282,9 +318,58 @@ function setBusy(busy) {
   joinForm?.querySelectorAll("button, input").forEach((control) => { control.disabled = busy; });
 }
 
+const ACCOUNT_KEY = "kiraathane-account";
+
+function readAccount() {
+  try {
+    const account = JSON.parse(localStorage.getItem(ACCOUNT_KEY) || "null");
+    if (!account?.AccessToken || !account.ExpiresAt) return null;
+    if (Date.parse(account.ExpiresAt) <= Date.now()) {
+      localStorage.removeItem(ACCOUNT_KEY);
+      return null;
+    }
+    return account;
+  } catch {
+    return null;
+  }
+}
+
+function paintAccount() {
+  const account = readAccount();
+  const label = account ? account.FullName : "Kapı";
+  const onDoor = location.pathname.endsWith("/kapi.html");
+  const nav = document.querySelector(".desk-nav");
+  if (nav && !nav.querySelector("[data-account]")) {
+    const link = document.createElement("a");
+    link.dataset.account = "true";
+    link.href = "/kapi.html";
+    link.className = "account-chip";
+    nav.append(link);
+  }
+  document.querySelectorAll(".dock").forEach((dock) => {
+    if (dock.querySelector("[data-profile]")) return;
+    const link = document.createElement("a");
+    link.dataset.profile = "true";
+    link.href = "/kapi.html";
+    link.innerHTML = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.2"/><path d="M6.2 19.2c.8-3 2.8-4.6 5.8-4.6s5 1.6 5.8 4.6"/></svg><span></span>';
+    if (onDoor) link.setAttribute("aria-current", "page");
+    dock.append(link);
+  });
+  document.querySelectorAll("[data-account], [data-profile] span").forEach((node) => {
+    node.textContent = label;
+  });
+}
+
+window.KiraathaneAccount = { read: readAccount, paint: paintAccount };
+
 async function api(url, options = {}) {
+  const account = readAccount();
   const response = await fetch(url, {
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      ...(account ? { Authorization: `Bearer ${account.AccessToken}` } : {})
+    },
     ...options
   });
   const body = await response.json();

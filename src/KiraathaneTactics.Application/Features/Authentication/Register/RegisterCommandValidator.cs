@@ -20,6 +20,7 @@ public sealed class RegisterCommandValidator : AbstractValidator<RegisterCommand
 
         RuleFor(x => x.FullName)
             .NotEmpty().WithErrorCode("Auth.FullName.Required").WithMessage("Ad soyad zorunludur.")
-            .MaximumLength(150).WithErrorCode("Auth.FullName.TooLong").WithMessage("Ad soyad en fazla 150 karakter olabilir.");
+            .MinimumLength(2).WithErrorCode("Auth.FullName.TooShort").WithMessage("Duvar adı en az 2 karakter olmalı.")
+            .MaximumLength(24).WithErrorCode("Auth.FullName.TooLong").WithMessage("Duvar adı en fazla 24 karakter olabilir.");
     }
 }
