@@ -13,9 +13,14 @@
   --muted: #6d5846;
   --danger: #9b2c2c;
   --shadow: 0 18px 40px rgba(36, 23, 15, 0.28);
-  --font-display: "Fraunces", "Times New Roman", serif;
+  --font-display: "Outfit", "Segoe UI", sans-serif;
   --font-body: "Outfit", "Segoe UI", sans-serif;
   color-scheme: light;
+}
+h1, h2, .bar h1 {
+  font-weight: 700;
+  font-synthesis: none;
+  letter-spacing: -0.03em;
 }
 
 * { box-sizing: border-box; }
@@ -76,7 +81,7 @@ button, .cell { font: inherit; }
   margin: 0;
   font-family: var(--font-display);
   font-size: 1.7rem;
-  font-weight: 560;
+  font-weight: 700;
   letter-spacing: -0.03em;
   color: var(--paper);
 }
