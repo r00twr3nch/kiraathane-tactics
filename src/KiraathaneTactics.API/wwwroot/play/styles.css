@@ -135,6 +135,13 @@ body.in-match .lobby { display: none; }
   outline-offset: 3px;
 }
 
+.abandon {
+  color: #f3d2c4;
+  box-shadow: inset 0 0 0 1px rgba(196, 85, 58, 0.7);
+}
+
+.abandon:disabled { opacity: 0.55; }
+
 .lobby input {
   min-width: 0;
   width: 8ch;
@@ -403,7 +410,8 @@ body.in-match .lobby { display: none; }
 }
 
 .hand-head, .perks { display: flex; gap: 8px; align-items: center; }
-.hand-head { justify-content: space-between; }
+.hand-head { justify-content: flex-end; flex-wrap: wrap; }
+.hand-head h2 { margin-right: auto; }
 .hand h2 {
   margin: 0;
   font-family: var(--font-body);

@@ -27,6 +27,10 @@ document.querySelectorAll(".perk").forEach((button) => {
   button.addEventListener("click", () => selectPerk(button.dataset.perk));
 });
 
+document.querySelector("#abandon")?.addEventListener("click", () => {
+  leaveTable().catch((error) => setStatus(error.message, true));
+});
+
 async function boot() {
   state.catalog = await api("/api/tiles");
   renderCatalog();
@@ -50,6 +54,10 @@ async function boot() {
     const over = state.match?.Status === "Completed" || state.match?.Status === "Draw";
     if (over) {
       sessionStorage.removeItem("kiraathane-seat");
+      if (state.bot) sessionStorage.setItem("kiraathane-rematch", JSON.stringify({
+        level: state.bot.level,
+        catalog: state.bot.catalog
+      }));
       sessionStorage.removeItem("kiraathane-bot");
     }
     const ranks = { cirak: "Çırak", kalfa: "Kalfa", usta: "Usta" };
@@ -69,7 +77,8 @@ async function hostRoom() {
 
 async function restartMatch() {
   const curtain = document.querySelector("#curtain");
-  const bot = state.bot;
+  const remembered = sessionStorage.getItem("kiraathane-rematch");
+  const bot = state.bot || (remembered ? JSON.parse(remembered) : null);
   state.selectedTileId = null;
   state.selectedPerk = null;
   state.previousOwners = new Map();
@@ -79,24 +88,49 @@ async function restartMatch() {
       method: "POST",
       body: JSON.stringify({ roomCode: light.RoomCode })
     });
+    const catalog = bot.catalog?.length ? bot.catalog : await api("/api/tiles");
     state.seat = light;
     state.bot = {
       matchId: light.MatchId,
       seatToken: dark.SeatToken,
       side: dark.Side,
-      level: bot.level,
-      catalog: bot.catalog
+      level: bot.level || "kalfa",
+      catalog
     };
     sessionStorage.setItem("kiraathane-seat", JSON.stringify(state.seat));
     sessionStorage.setItem("kiraathane-bot", JSON.stringify(state.bot));
+    sessionStorage.setItem("kiraathane-human", JSON.stringify(light));
+    sessionStorage.removeItem("kiraathane-rematch");
+    const url = new URL(location.href);
+    url.searchParams.set("bot", "1");
+    history.replaceState(null, "", url);
     await loadMatch(light.MatchId);
     curtain.hidden = true;
     const ranks = { cirak: "Çırak", kalfa: "Kalfa", usta: "Usta" };
-    setStatus(`${ranks[bot.level] || "Kalfa"} çaycı yeni fincanları dizdi. İlk yudum sende.`);
+    setStatus(`${ranks[state.bot.level] || "Kalfa"} çaycı yeni fincanları dizdi. İlk yudum sende.`);
     return;
   }
   curtain.hidden = true;
   await hostRoom();
+}
+
+async function leaveTable() {
+  const button = document.querySelector("#abandon");
+  if (!state.seat || !state.match || !state.connection) return;
+  const over = state.match.Status === "Completed" || state.match.Status === "Draw";
+  if (over) return;
+  const rival = state.bot ? "Çaycı" : "Rakip";
+  if (!window.confirm(`${rival} masayı alır. Terk edilsin mi?`)) return;
+  button.disabled = true;
+  const token = state.bot ? state.bot.seatToken : state.seat.SeatToken;
+  if (state.bot) sessionStorage.setItem("kiraathane-rematch", JSON.stringify({
+    level: state.bot.level,
+    catalog: state.bot.catalog
+  }));
+  await state.connection.invoke("Leave", state.seat.MatchId, token);
+  sessionStorage.removeItem("kiraathane-seat");
+  sessionStorage.removeItem("kiraathane-bot");
+  state.bot = null;
 }
 
 async function joinRoom(code) {
@@ -248,6 +282,12 @@ function endDrag(event) {
 function render() {
   const match = state.match;
   document.body.classList.toggle("in-match", Boolean(match));
+  const abandon = document.querySelector("#abandon");
+  if (abandon) {
+    const over = match.Status === "Completed" || match.Status === "Draw";
+    abandon.hidden = !state.seat || over;
+    abandon.disabled = false;
+  }
   paintSide("light", match.LightScore, match.LightPerkCharges, match.CurrentTurn === "Light");
   paintSide("dark", match.DarkScore, match.DarkPerkCharges, match.CurrentTurn === "Dark");
   document.querySelector("#turn-pill").textContent = turnLabel(match);
