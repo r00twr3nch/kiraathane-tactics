@@ -36,10 +36,13 @@ function paintDoor() {
   const username = account.FullName || account.RegisteredName;
   const wins = window.KiraathaneAccount?.wins?.(account) ?? 0;
   const rank = window.KiraathaneAccount?.rank?.(wins) ?? { title: "Çırak", next: 3 };
+  const purse = window.KiraathaneAccount?.purse?.(account) ?? { gold: 0, frame: "plain" };
   const avatar = document.createElement("span");
-  avatar.className = "door-avatar";
+  avatar.className = `door-avatar frame-${purse.frame}`;
+  avatar.style.cssText = window.KiraathaneAccount?.avatarStyle?.(purse) || "";
   avatar.setAttribute("aria-hidden", "true");
-  avatar.textContent = initials(username);
+  if (window.KiraathaneAccount?.mount) window.KiraathaneAccount.mount(avatar, purse, 8);
+  else avatar.textContent = initials(username);
   const details = document.createElement("section");
   details.className = "profile-details";
   details.setAttribute("aria-label", "Profil bilgileri");
@@ -51,6 +54,7 @@ function paintDoor() {
     line("Mail", account.Email),
     line("Ünvan", rank.title),
     line("Galibiyet", String(wins)),
+    line("Altın", String(purse.gold)),
     line("Sıradaki", nextRank),
   );
   details.append(facts);

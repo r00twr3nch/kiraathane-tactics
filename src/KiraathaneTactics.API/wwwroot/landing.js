@@ -388,6 +388,64 @@ function rankFor(wins) {
   return { title, next };
 }
 
+const GOLD_PER_WIN = 25;
+const LOOK_SLOT = { frames: "frame", colors: "color", faces: "face" };
+const LOOKS = {
+  faces: [
+    { id: "dayi", name: "Veteran Dayı", price: 0 },
+    { id: "cayci", name: "Çaycı", price: 75 },
+    { id: "usta", name: "Tavla Ustası", price: 100 },
+    { id: "ogrenci", name: "Öğrenci", price: 125 },
+    { id: "hanim", name: "Hanımefendi", price: 150 },
+    { id: "satranc", name: "Satranççı", price: 175 }
+  ],
+  frames: [
+    { id: "plain", name: "Sade", price: 0 },
+    { id: "brass", name: "Pirinç", price: 50 },
+    { id: "tea", name: "Çay", price: 100 },
+    { id: "night", name: "Gece", price: 175 }
+  ],
+  colors: [
+    { id: "clay", name: "Kil", price: 0, colors: ["#f8e7b0", "#c4553a", "#4a2c1a"] },
+    { id: "emerald", name: "Zümrüt", price: 75, colors: ["#e7f6df", "#2f7d4a", "#163326"] },
+    { id: "indigo", name: "Çivit", price: 125, colors: ["#e4e8ff", "#4454b8", "#1b2148"] },
+    { id: "rose", name: "Gül", price: 150, colors: ["#ffe4ea", "#c44768", "#4a1d2b"] }
+  ]
+};
+
+function purseKey(account) {
+  return `kiraathane-purse:${account?.UserId || "misafir"}`;
+}
+
+function readPurse(account = readAccount()) {
+  const raw = JSON.parse(localStorage.getItem(purseKey(account)) || "null");
+  const owned = new Set(Array.isArray(raw?.owned) ? raw.owned : []);
+  owned.add("face:dayi");
+  owned.add("frame:plain");
+  owned.add("color:clay");
+  return {
+    gold: Number.isFinite(raw?.gold) && raw.gold > 0 ? Math.floor(raw.gold) : 0,
+    owned: [...owned],
+    frame: raw?.frame || "plain",
+    color: raw?.color || "clay",
+    face: raw?.face || "dayi"
+  };
+}
+
+function writePurse(purse, account = readAccount()) {
+  localStorage.setItem(purseKey(account), JSON.stringify(purse));
+  return purse;
+}
+
+function lookFor(kind, id) {
+  return LOOKS[kind].find((item) => item.id === id) || LOOKS[kind][0];
+}
+
+function avatarStyle(purse = readPurse()) {
+  const color = lookFor("colors", purse.color);
+  return `background:radial-gradient(circle at 32% 26%, rgba(255,255,255,.5), transparent 34%),linear-gradient(160deg, ${color.colors.join(", ")});`;
+}
+
 function noteWin(matchId) {
   const account = readAccount();
   if (!account || !matchId) return readWins(account);
@@ -395,12 +453,53 @@ function noteWin(matchId) {
   const seen = JSON.parse(localStorage.getItem(seenKey) || "[]");
   if (seen.includes(matchId)) return readWins(account);
   const wins = readWins(account) + 1;
+  const purse = readPurse(account);
+  purse.gold += GOLD_PER_WIN;
+  writePurse(purse, account);
   localStorage.setItem(winsKey(account), String(wins));
   localStorage.setItem(seenKey, JSON.stringify([matchId, ...seen].slice(0, 40)));
   return wins;
 }
 
-window.KiraathaneAccount = { read: readAccount, paint: paintAccount, wins: readWins, rank: rankFor, noteWin };
+function mountPortrait(node, purse = readPurse(), scale = 6) {
+  node.replaceChildren();
+  node.classList.add("has-portrait");
+  const canvas = document.createElement("canvas");
+  canvas.setAttribute("aria-hidden", "true");
+  window.paintPortrait?.(canvas, purse.face || "dayi", scale);
+  node.append(canvas);
+  return node;
+}
+
+function buyLook(kind, id) {
+  const account = readAccount();
+  if (!account) throw new Error("Önce kapıdan içeri gir.");
+  const shelf = LOOKS[kind] ? kind : "colors";
+  const item = lookFor(shelf, id);
+  const purse = readPurse(account);
+  const slot = LOOK_SLOT[shelf];
+  const token = `${slot}:${item.id}`;
+  if (!purse.owned.includes(token)) {
+    if (purse.gold < item.price) throw new Error("Altın yetmiyor.");
+    purse.gold -= item.price;
+    purse.owned.push(token);
+  }
+  purse[slot] = item.id;
+  return writePurse(purse, account);
+}
+
+window.KiraathaneAccount = {
+  read: readAccount,
+  paint: paintAccount,
+  wins: readWins,
+  rank: rankFor,
+  purse: readPurse,
+  looks: LOOKS,
+  avatarStyle,
+  mount: mountPortrait,
+  buy: buyLook,
+  noteWin
+};
 
 async function api(url, options = {}) {
   const account = readAccount();
