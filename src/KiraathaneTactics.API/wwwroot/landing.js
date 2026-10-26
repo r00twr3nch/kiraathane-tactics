@@ -342,6 +342,28 @@ function paintAccount() {
   document.querySelectorAll("[data-account], [data-profile] span").forEach((node) => {
     node.textContent = label;
   });
+  paintMast(account);
+}
+
+function paintMast(account = readAccount()) {
+  const mast = document.querySelector("#mast");
+  if (!mast) return;
+  const name = document.querySelector("#mast-name");
+  const rank = document.querySelector("#mast-rank");
+  const gold = document.querySelector("#mast-gold");
+  if (!account) {
+    if (name) name.textContent = "Kapıdan gir";
+    if (rank) rank.textContent = "Misafir";
+    if (gold) gold.hidden = true;
+    return;
+  }
+  const wins = readWins(account);
+  if (name) name.textContent = account.FullName || account.RegisteredName || "Sen";
+  if (rank) rank.textContent = rankFor(wins).title;
+  if (gold) {
+    gold.hidden = false;
+    gold.textContent = `${readPurse(account).gold} altın`;
+  }
 }
 
 const RANKS = [
