@@ -397,7 +397,11 @@ const LOOKS = {
     { id: "usta", name: "Tavla Ustası", price: 100 },
     { id: "ogrenci", name: "Öğrenci", price: 125 },
     { id: "hanim", name: "Hanımefendi", price: 150 },
-    { id: "satranc", name: "Satranççı", price: 175 }
+    { id: "satranc", name: "Satranççı", price: 175 },
+    { id: "nargile", name: "Nargileci", price: 200 },
+    { id: "sair", name: "Şair", price: 200 },
+    { id: "gazeteci", name: "Gazeteci", price: 225 },
+    { id: "muavin", name: "Muavin", price: 225 }
   ],
   frames: [
     { id: "plain", name: "Sade", price: 0 },

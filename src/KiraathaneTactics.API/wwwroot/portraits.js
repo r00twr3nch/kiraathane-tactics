@@ -112,6 +112,67 @@ const FACES = {
     roundGlasses(pen);
     nose(pen);
     mouth(pen, 114);
+  },
+  nargile(pen) {
+    wash(pen, "#e7d3b0", "#5a3418");
+    shoulders(pen, "#6b2a1a", "#3a140e");
+    neck(pen);
+    scarf(pen, "#c9a15b");
+    hair(pen, "#1a100c");
+    head(pen);
+    brow(pen, "#1a100c", 2.6, true);
+    eye(pen, 64, 88);
+    eye(pen, 96, 88);
+    nose(pen);
+    beard(pen, "#2a1a12");
+    fez(pen);
+    hose(pen);
+  },
+  sair(pen) {
+    wash(pen, "#efe4d4", "#4a3048");
+    shoulders(pen, "#2a2438", "#161222");
+    neck(pen);
+    cravat(pen);
+    hair(pen, "#241820");
+    head(pen);
+    wave(pen);
+    brow(pen, "#241820", 2, false);
+    eye(pen, 64, 86);
+    eye(pen, 96, 86);
+    nose(pen);
+    mustache(pen, "#3a241c", 18);
+    mouth(pen, 116);
+  },
+  gazeteci(pen) {
+    wash(pen, "#d7e2ea", "#243848");
+    shoulders(pen, "#d8d2c4", "#8a8474");
+    neck(pen);
+    collar(pen, "#f7f4ee");
+    tie(pen, "#1c3a5a");
+    hair(pen, "#2a241c");
+    head(pen);
+    brow(pen, "#2a241c", 2.4, true);
+    eye(pen, 64, 86);
+    eye(pen, 96, 86);
+    nose(pen);
+    mouth(pen, 114);
+    pressHat(pen);
+    card(pen);
+  },
+  muavin(pen) {
+    wash(pen, "#dce6d4", "#2a4030");
+    shoulders(pen, "#1f4a34", "#10281c");
+    neck(pen);
+    collar(pen, "#f4efe4");
+    hair(pen, "#1a140e");
+    head(pen);
+    brow(pen, "#1a140e", 2.8, true);
+    eye(pen, 64, 88);
+    eye(pen, 96, 88);
+    nose(pen);
+    mustache(pen, "#24160f", 20);
+    mouth(pen, 116);
+    kepi(pen);
   }
 };
 
@@ -460,5 +521,133 @@ function bow(pen) {
   pen.fill();
   pen.beginPath();
   pen.arc(80, 132, 3, 0, Math.PI * 2);
+  pen.fill();
+}
+
+function scarf(pen, color) {
+  pen.fillStyle = color;
+  pen.beginPath();
+  pen.moveTo(62, 118);
+  pen.quadraticCurveTo(80, 132, 98, 118);
+  pen.lineTo(104, 148);
+  pen.lineTo(88, 142);
+  pen.lineTo(80, 158);
+  pen.lineTo(72, 140);
+  pen.lineTo(56, 146);
+  pen.closePath();
+  pen.fill();
+}
+
+function beard(pen, color) {
+  pen.fillStyle = color;
+  pen.beginPath();
+  pen.moveTo(58, 104);
+  pen.quadraticCurveTo(62, 128, 80, 132);
+  pen.quadraticCurveTo(98, 128, 102, 104);
+  pen.quadraticCurveTo(90, 112, 80, 110);
+  pen.quadraticCurveTo(70, 112, 58, 104);
+  pen.fill();
+}
+
+function fez(pen) {
+  pen.fillStyle = "#9d1c2e";
+  pen.beginPath();
+  pen.moveTo(56, 62);
+  pen.lineTo(104, 62);
+  pen.lineTo(100, 46);
+  pen.lineTo(60, 46);
+  pen.closePath();
+  pen.fill();
+  pen.fillStyle = "#1a100c";
+  pen.fillRect(58, 60, 44, 5);
+  pen.strokeStyle = "#1a100c";
+  pen.lineWidth = 1.4;
+  pen.beginPath();
+  pen.moveTo(80, 46);
+  pen.quadraticCurveTo(86, 34, 92, 28);
+  pen.stroke();
+}
+
+function hose(pen) {
+  pen.strokeStyle = "#6b2a1a";
+  pen.lineWidth = 3;
+  pen.lineCap = "round";
+  pen.beginPath();
+  pen.moveTo(112, 108);
+  pen.quadraticCurveTo(128, 96, 124, 78);
+  pen.stroke();
+  pen.fillStyle = "#c9a15b";
+  pen.beginPath();
+  pen.arc(124, 74, 5, 0, Math.PI * 2);
+  pen.fill();
+}
+
+function wave(pen) {
+  pen.fillStyle = "#241820";
+  pen.beginPath();
+  pen.moveTo(48, 78);
+  pen.quadraticCurveTo(58, 96, 72, 82);
+  pen.quadraticCurveTo(64, 68, 52, 70);
+  pen.closePath();
+  pen.fill();
+}
+
+function cravat(pen) {
+  pen.fillStyle = "#7a3044";
+  pen.beginPath();
+  pen.moveTo(80, 122);
+  pen.lineTo(92, 136);
+  pen.lineTo(80, 156);
+  pen.lineTo(68, 136);
+  pen.closePath();
+  pen.fill();
+  pen.fillStyle = "#f4efe4";
+  pen.beginPath();
+  pen.arc(80, 128, 3, 0, Math.PI * 2);
+  pen.fill();
+}
+
+function pressHat(pen) {
+  pen.fillStyle = "#f4efe4";
+  pen.beginPath();
+  pen.moveTo(54, 58);
+  pen.lineTo(108, 54);
+  pen.lineTo(104, 42);
+  pen.lineTo(58, 44);
+  pen.closePath();
+  pen.fill();
+  pen.fillStyle = "#1c3a5a";
+  pen.fillRect(60, 50, 44, 5);
+  pen.beginPath();
+  pen.ellipse(82, 58, 42, 5, -0.06, 0, Math.PI * 2);
+  pen.fill();
+}
+
+function card(pen) {
+  pen.fillStyle = "#f7f4ee";
+  pen.save();
+  pen.translate(118, 118);
+  pen.rotate(0.4);
+  pen.fillRect(0, 0, 22, 16);
+  pen.fillStyle = "#1c3a5a";
+  pen.fillRect(3, 4, 12, 2);
+  pen.fillRect(3, 8, 16, 1.4);
+  pen.restore();
+}
+
+function kepi(pen) {
+  pen.fillStyle = "#1f4a34";
+  pen.beginPath();
+  pen.moveTo(58, 60);
+  pen.lineTo(102, 60);
+  pen.lineTo(96, 44);
+  pen.lineTo(64, 44);
+  pen.closePath();
+  pen.fill();
+  pen.fillStyle = "#c9a15b";
+  pen.fillRect(64, 50, 32, 3);
+  pen.fillStyle = "#163326";
+  pen.beginPath();
+  pen.ellipse(86, 62, 36, 6, 0.1, 0, Math.PI * 2);
   pen.fill();
 }
