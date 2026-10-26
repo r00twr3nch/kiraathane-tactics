@@ -22,14 +22,14 @@ public class LoginCommandHandlerTests
     public async Task Handle_DogruBilgilerle_TokenDoner()
     {
         // Arrange
-        var user = new User { Email = "test@test.com", PasswordHash = "hash", FullName = "Test", IsActive = true };
-        _userRepository.GetByEmailAsync("test@test.com", Arg.Any<CancellationToken>()).Returns(user);
+        var user = new User { Email = "test@test.com", PasswordHash = "hash", FullName = "Test", RegisteredName = "Test", IsActive = true };
+        _userRepository.GetByLoginAsync("test", Arg.Any<CancellationToken>()).Returns(user);
         _passwordHasher.Verify("Password1!", "hash").Returns(true);
         _jwtTokenGenerator.Generate(user).Returns(new JwtToken("token-123", DateTimeOffset.UtcNow.AddHours(1)));
 
         // Act
         var result = await _sut.Handle(
-            new LoginCommand { Email = "test@test.com", Password = "Password1!" }, CancellationToken.None);
+            new LoginCommand { Login = "Test", Password = "Password1!" }, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -40,11 +40,11 @@ public class LoginCommandHandlerTests
     public async Task Handle_KullaniciYoksa_InvalidCredentialsDoner()
     {
         // Arrange
-        _userRepository.GetByEmailAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns((User?)null);
+        _userRepository.GetByLoginAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns((User?)null);
 
         // Act
         var result = await _sut.Handle(
-            new LoginCommand { Email = "yok@test.com", Password = "x" }, CancellationToken.None);
+            new LoginCommand { Login = "yok", Password = "x" }, CancellationToken.None);
 
         // Assert
         result.IsFailure.Should().BeTrue();
@@ -55,13 +55,13 @@ public class LoginCommandHandlerTests
     public async Task Handle_PasifKullanici_UserInactiveDoner()
     {
         // Arrange
-        var user = new User { Email = "test@test.com", PasswordHash = "hash", IsActive = false };
-        _userRepository.GetByEmailAsync("test@test.com", Arg.Any<CancellationToken>()).Returns(user);
+        var user = new User { Email = "test@test.com", PasswordHash = "hash", RegisteredName = "Test", IsActive = false };
+        _userRepository.GetByLoginAsync("test", Arg.Any<CancellationToken>()).Returns(user);
         _passwordHasher.Verify(Arg.Any<string>(), Arg.Any<string>()).Returns(true);
 
         // Act
         var result = await _sut.Handle(
-            new LoginCommand { Email = "test@test.com", Password = "Password1!" }, CancellationToken.None);
+            new LoginCommand { Login = "Test", Password = "Password1!" }, CancellationToken.None);
 
         // Assert
         result.IsFailure.Should().BeTrue();

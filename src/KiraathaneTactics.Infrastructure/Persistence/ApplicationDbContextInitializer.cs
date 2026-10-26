@@ -231,6 +231,19 @@ public sealed class ApplicationDbContextInitializer(
             await context.Database.ExecuteSqlRawAsync(
                 """UPDATE "Users" SET "RegisteredName" = "FullName" WHERE "RegisteredName" = '';""",
                 cancellationToken);
+            // Eski kayıtlarda aynı ad birden fazla olabilir. İlk hesap kalır, sonrakiler ayrılır.
+            await context.Database.ExecuteSqlRawAsync(
+                """
+                UPDATE "Users"
+                SET "RegisteredName" = substr("RegisteredName", 1, 33) || '-' || substr("Id", 1, 6)
+                WHERE "Id" NOT IN (
+                    SELECT MIN("Id") FROM "Users" GROUP BY lower("RegisteredName")
+                );
+                """,
+                cancellationToken);
+            await context.Database.ExecuteSqlRawAsync(
+                """CREATE UNIQUE INDEX IF NOT EXISTS "IX_Users_RegisteredName" ON "Users" ("RegisteredName");""",
+                cancellationToken);
         }
         finally
         {

@@ -516,12 +516,17 @@ function showCurtain(match) {
       : lost
         ? ["Çay soğudu", `${rival} fincanları topladı. Bir yudum daha, bu sefer kenara bak.`, "Hesap geldi"]
         : ["İki çay, bir hesap", "Ne sen devirdin ne o. Bardaklar ortada kaldı.", "Berabere"];
-  if (won && window.KiraathaneAccount?.noteWin) window.KiraathaneAccount.noteWin(match.Id);
+  const gold = won ? awardWinGold(match.Id) : 0;
   curtain.className = `curtain ${won ? "win" : lost ? "lose" : "draw"}`;
   document.querySelector("#curtain-kicker").textContent = lines[2];
   document.querySelector("#curtain-title").textContent = lines[0];
   document.querySelector("#curtain-line").textContent = lines[1];
   document.querySelector("#curtain-score").textContent = `${match.LightScore} – ${match.DarkScore}`;
+  const purseLine = document.querySelector("#curtain-gold");
+  if (purseLine) {
+    purseLine.hidden = gold <= 0;
+    purseLine.textContent = gold > 0 ? `+${gold} altın` : "";
+  }
   bindWallSign(match);
   const again = document.querySelector("#curtain-again");
   again.onclick = () => {
@@ -564,6 +569,8 @@ function bindWallSign(match) {
   });
 }
 
+const GOLD_PER_WIN = 25;
+
 function readAccount() {
   try {
     const account = JSON.parse(localStorage.getItem("kiraathane-account") || "null");
@@ -572,6 +579,23 @@ function readAccount() {
   } catch {
     return null;
   }
+}
+
+function awardWinGold(matchId) {
+  const account = readAccount();
+  if (!account?.UserId || !matchId) return 0;
+  const seenKey = `kiraathane-wins-seen:${account.UserId}`;
+  const seen = JSON.parse(localStorage.getItem(seenKey) || "[]");
+  if (seen.includes(matchId)) return 0;
+  const winsKey = `kiraathane-wins:${account.UserId}`;
+  const wins = Math.max(0, Math.floor(Number(localStorage.getItem(winsKey)) || 0)) + 1;
+  const purseKey = `kiraathane-purse:${account.UserId}`;
+  const purse = JSON.parse(localStorage.getItem(purseKey) || "null") || {};
+  purse.gold = Math.max(0, Math.floor(Number(purse.gold) || 0)) + GOLD_PER_WIN;
+  localStorage.setItem(purseKey, JSON.stringify(purse));
+  localStorage.setItem(winsKey, String(wins));
+  localStorage.setItem(seenKey, JSON.stringify([matchId, ...seen].slice(0, 40)));
+  return GOLD_PER_WIN;
 }
 
 function rememberOwners() {

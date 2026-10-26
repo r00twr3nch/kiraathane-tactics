@@ -23,6 +23,8 @@ public sealed class RegisterCommandHandler(
             return AuthenticationErrors.EmailAlreadyExists;
 
         var name = request.FullName.Trim();
+        if (await userRepository.NameExistsAsync(name.ToLowerInvariant(), cancellationToken))
+            return AuthenticationErrors.NameAlreadyExists;
         var user = new User
         {
             Email = email,

@@ -10,6 +10,8 @@ public interface IUserRepository : IGenericRepository<User>
 {
     Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default);
     Task<bool> EmailExistsAsync(string email, CancellationToken cancellationToken = default);
+    Task<User?> GetByLoginAsync(string login, CancellationToken cancellationToken = default);
+    Task<bool> NameExistsAsync(string name, CancellationToken cancellationToken = default);
 
     /// <summary>Bu hesabın duvar satırlarını yeni ada çeker.</summary>
     Task RenameWallAsync(Guid userId, string name, CancellationToken cancellationToken = default);

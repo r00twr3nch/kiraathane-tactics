@@ -18,6 +18,7 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.Role).HasConversion<string>().HasMaxLength(50);
 
         builder.HasIndex(u => u.Email).IsUnique();
+        builder.HasIndex(u => u.RegisteredName).IsUnique();
 
         // Soft delete: silinmiş kullanıcılar sorgulardan otomatik çıkar
         builder.HasQueryFilter(u => !u.IsDeleted);

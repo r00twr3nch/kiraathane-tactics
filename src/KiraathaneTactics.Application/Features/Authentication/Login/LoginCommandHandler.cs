@@ -15,9 +15,11 @@ public sealed class LoginCommandHandler(
         LoginCommand request,
         CancellationToken cancellationToken)
     {
-        var email = request.Email.Trim().ToLowerInvariant();
+        var login = (string.IsNullOrWhiteSpace(request.Login) ? request.Email : request.Login)
+            .Trim()
+            .ToLowerInvariant();
 
-        var user = await userRepository.GetByEmailAsync(email, cancellationToken);
+        var user = await userRepository.GetByLoginAsync(login, cancellationToken);
         if (user is null || !passwordHasher.Verify(request.Password, user.PasswordHash))
             return AuthenticationErrors.InvalidCredentials;
 

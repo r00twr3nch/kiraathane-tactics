@@ -3,7 +3,8 @@ using KiraathaneTactics.Application.Common.Interfaces;
 namespace KiraathaneTactics.API.Services;
 
 /// <summary>
-/// Geliştirme kuyruğu. Gerçek oyuncu yokken birkaç bot sırayla boş masaya oturur.
+/// Geliştirme kuyruğu. Boş masa önce gerçek oyuncuya kalır;
+/// on saniye içinde kimse oturmazsa bir bot koyu koltuğa geçer.
 /// </summary>
 public sealed class QueueBotHost(
     IOnlineQueue queue,
@@ -11,12 +12,7 @@ public sealed class QueueBotHost(
     ILogger<QueueBotHost> logger) : BackgroundService
 {
     private const int Bots = 3;
-    private static readonly TimeSpan[] Arrivals =
-    [
-        TimeSpan.FromSeconds(2),
-        TimeSpan.FromSeconds(5),
-        TimeSpan.FromSeconds(9)
-    ];
+    private static readonly TimeSpan PlayerFirst = TimeSpan.FromSeconds(10);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -27,12 +23,8 @@ public sealed class QueueBotHost(
             {
                 await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
                 var waiting = queue.Waiting.Where(seat => busy.Add(seat.MatchId)).Take(Bots).ToList();
-                for (var index = 0; index < waiting.Count; index++)
-                {
-                    var seat = waiting[index];
-                    var delay = Arrivals[Math.Min(index, Arrivals.Length - 1)];
-                    _ = SitLaterAsync(seat, delay, busy, stoppingToken);
-                }
+                foreach (var seat in waiting)
+                    _ = SitLaterAsync(seat, PlayerFirst, busy, stoppingToken);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {

@@ -19,10 +19,8 @@ public sealed class RegisterCommandValidator : AbstractValidator<RegisterCommand
             .Matches("[0-9]").WithErrorCode("Auth.Password.MissingDigit").WithMessage("Parola en az bir rakam içermelidir.");
 
         RuleFor(x => x.FullName)
-            .NotEmpty().WithErrorCode("Auth.FullName.Required").WithMessage("Ad soyad zorunludur.")
-            .MinimumLength(2).WithErrorCode("Auth.FullName.TooShort").WithMessage("İsim soyisim en az 2 karakter olmalı.")
-            .MaximumLength(40).WithErrorCode("Auth.FullName.TooLong").WithMessage("İsim soyisim en fazla 40 karakter olabilir.")
-            .Must(name => name.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries).Length >= 2)
-            .WithErrorCode("Auth.FullName.NeedsSurname").WithMessage("İsim ve soyisim birlikte yazılmalı.");
+            .NotEmpty().WithErrorCode("Auth.FullName.Required").WithMessage("Kullanıcı adı zorunludur.")
+            .MinimumLength(2).WithErrorCode("Auth.FullName.TooShort").WithMessage("Kullanıcı adı en az 2 karakter olmalı.")
+            .MaximumLength(40).WithErrorCode("Auth.FullName.TooLong").WithMessage("Kullanıcı adı en fazla 40 karakter olabilir.");
     }
 }

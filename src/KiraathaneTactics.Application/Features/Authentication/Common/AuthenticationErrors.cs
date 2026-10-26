@@ -8,8 +8,11 @@ public static class AuthenticationErrors
     public static readonly Error EmailAlreadyExists =
         Error.Conflict("Auth.EmailAlreadyExists", "Bu e-posta adresi zaten kayıtlı.");
 
+    public static readonly Error NameAlreadyExists =
+        Error.Conflict("Auth.NameAlreadyExists", "Bu kullanıcı adı alınmış.");
+
     public static readonly Error InvalidCredentials =
-        Error.Unauthorized("Auth.InvalidCredentials", "E-posta veya parola hatalı.");
+        Error.Unauthorized("Auth.InvalidCredentials", "Kullanıcı adı veya parola hatalı.");
 
     public static readonly Error UserInactive =
         Error.Forbidden("Auth.UserInactive", "Hesabınız pasif durumda.");
