@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,700&family=Outfit:wght@400;500;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=41" />
+  <link rel="stylesheet" href="styles.css?v=43" />
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -29,14 +29,16 @@
 
     <section class="scoreboard" aria-label="Skor">
       <article class="side light" id="side-light">
-        <span class="side-name">Açık</span>
+        <span class="side-name" id="name-light">Açık</span>
+        <span class="who" id="who-light" hidden></span>
         <strong id="score-light">0</strong>
         <time id="clock-light">3:30</time>
         <span class="charges" id="charges-light" aria-label="Açık joker hakkı"><b>3</b></span>
       </article>
       <div class="turn-pill" id="turn-pill">Sıra açıkta</div>
       <article class="side dark" id="side-dark">
-        <span class="side-name">Koyu</span>
+        <span class="side-name" id="name-dark">Koyu</span>
+        <span class="who" id="who-dark" hidden></span>
         <strong id="score-dark">0</strong>
         <time id="clock-dark">3:30</time>
         <span class="charges" id="charges-dark" aria-label="Koyu joker hakkı"><b>3</b></span>
@@ -85,6 +87,25 @@
       </div>
     </div>
   </div>
-  <script src="app.js?v=45"></script>
+  <div class="intro" id="intro" hidden>
+    <div class="intro-card" role="dialog" aria-modal="true" aria-labelledby="intro-line">
+      <p class="intro-kicker">Masa kuruldu</p>
+      <div class="intro-seats">
+        <article class="intro-seat you" id="intro-you">
+          <span class="intro-role" id="intro-you-role">Sen</span>
+          <strong id="intro-you-name">Sen</strong>
+          <em id="intro-you-side">Açık</em>
+        </article>
+        <span class="intro-vs" aria-hidden="true">çay</span>
+        <article class="intro-seat rival" id="intro-rival">
+          <span class="intro-role">Karşı</span>
+          <strong id="intro-rival-name">Rakip</strong>
+          <em id="intro-rival-side">Koyu</em>
+        </article>
+      </div>
+      <p class="intro-line" id="intro-line">İlk yudum sende.</p>
+    </div>
+  </div>
+  <script src="app.js?v=49"></script>
 </body>
 </html>

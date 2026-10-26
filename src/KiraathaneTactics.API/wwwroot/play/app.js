@@ -64,6 +64,7 @@ async function boot() {
     setStatus(state.bot
       ? `${ranks[state.bot.level] || "Kalfa"} çaycı karşında. İlk yudum sende.`
       : `İkiniz de oturdunuz. ${state.match?.CurrentTurn === state.seat.Side ? "İlk yudum sende." : "İlk yudum karşıda."}`);
+    if (!over) showIntro();
     return;
   }
   setStatus("Masa aç ya da oda koduyla otur.");
@@ -108,6 +109,7 @@ async function restartMatch() {
     curtain.hidden = true;
     const ranks = { cirak: "Çırak", kalfa: "Kalfa", usta: "Usta" };
     setStatus(`${ranks[state.bot.level] || "Kalfa"} çaycı yeni fincanları dizdi. İlk yudum sende.`);
+    showIntro();
     return;
   }
   curtain.hidden = true;
@@ -122,7 +124,7 @@ async function leaveTable() {
   const rival = state.bot ? "Çaycı" : "Rakip";
   if (!window.confirm(`${rival} masayı alır. Terk edilsin mi?`)) return;
   button.disabled = true;
-  const token = state.bot ? state.bot.seatToken : state.seat.SeatToken;
+  const token = state.seat.SeatToken;
   if (state.bot) sessionStorage.setItem("kiraathane-rematch", JSON.stringify({
     level: state.bot.level,
     catalog: state.bot.catalog
@@ -141,6 +143,7 @@ async function joinRoom(code) {
   await loadMatch(state.seat.MatchId);
   const mine = state.seat.Side === "Light" ? "Açık" : "Koyu";
   const opens = state.match?.CurrentTurn === state.seat.Side;
+  if (state.match?.Status === "InProgress") showIntro();
   setStatus(`${mine} koltuğa oturdun. ${opens ? "İlk yudum sende." : "İlk yudum karşıda."}`);
 }
 
@@ -516,7 +519,7 @@ function showCurtain(match) {
       : lost
         ? ["Çay soğudu", `${rival} fincanları topladı. Bir yudum daha, bu sefer kenara bak.`, "Hesap geldi"]
         : ["İki çay, bir hesap", "Ne sen devirdin ne o. Bardaklar ortada kaldı.", "Berabere"];
-  const gold = won ? awardWinGold(match.Id) : 0;
+  const gold = won && !slippedOut ? awardWinGold(match.Id) : 0;
   curtain.className = `curtain ${won ? "win" : lost ? "lose" : "draw"}`;
   document.querySelector("#curtain-kicker").textContent = lines[2];
   document.querySelector("#curtain-title").textContent = lines[0];
@@ -607,6 +610,7 @@ function rememberOwners() {
 
 function paintSide(side, score, charges, active) {
   document.querySelector(`#score-${side}`).textContent = score;
+  paintWho(side);
   paintClocks();
   document.querySelector(`#side-${side}`).classList.toggle("active", active);
   const holder = document.querySelector(`#charges-${side}`);
@@ -690,6 +694,65 @@ function setStatus(message, isError = false) {
 
 function reducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+const rankNames = { cirak: "Çırak", kalfa: "Kalfa", usta: "Usta" };
+
+function selfName() {
+  const account = readAccount();
+  const name = (account?.FullName || account?.RegisteredName || "").trim();
+  return name || "Sen";
+}
+
+function rivalName() {
+  if (!state.bot) return "Rakip";
+  return `${rankNames[state.bot.level] || "Kalfa"} çaycı`;
+}
+
+function paintWho(side) {
+  const slot = document.querySelector(`#who-${side}`);
+  if (!slot || !state.seat || !state.match) return;
+  const playing = state.match.Status === "InProgress"
+    || state.match.Status === "Completed"
+    || state.match.Status === "Draw";
+  if (!playing) {
+    slot.hidden = true;
+    slot.textContent = "";
+    return;
+  }
+  const mine = state.seat.Side?.toLowerCase() === side;
+  slot.hidden = false;
+  slot.textContent = mine ? selfName() : rivalName();
+}
+
+let introTimer = 0;
+let introFor = null;
+
+function showIntro() {
+  const intro = document.querySelector("#intro");
+  const match = state.match;
+  const seat = state.seat;
+  if (!intro || !match || !seat || match.Status !== "InProgress") return;
+  if (introFor === match.Id) return;
+  introFor = match.Id;
+  const mine = seat.Side === "Dark" ? "dark" : "light";
+  const theirs = mine === "light" ? "dark" : "light";
+  const you = intro.querySelector("#intro-you");
+  const rival = intro.querySelector("#intro-rival");
+  you.classList.toggle("light", mine === "light");
+  you.classList.toggle("dark", mine === "dark");
+  rival.classList.toggle("light", theirs === "light");
+  rival.classList.toggle("dark", theirs === "dark");
+  intro.querySelector("#intro-you-name").textContent = selfName();
+  intro.querySelector("#intro-you-side").textContent = mine === "light" ? "Açık" : "Koyu";
+  intro.querySelector("#intro-rival-name").textContent = rivalName();
+  intro.querySelector("#intro-rival-side").textContent = theirs === "light" ? "Açık" : "Koyu";
+  const opens = match.CurrentTurn === seat.Side;
+  intro.querySelector("#intro-line").textContent = opens ? "İlk yudum sende." : "İlk yudum karşıda.";
+  intro.hidden = false;
+  window.clearTimeout(introTimer);
+  const hold = reducedMotion() ? 1400 : 2300;
+  introTimer = window.setTimeout(() => { intro.hidden = true; }, hold);
 }
 
 function createAudio() {
