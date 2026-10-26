@@ -13,6 +13,9 @@ public interface IOnlineQueue
     /// <summary>Açık koltuk hâlâ kuyrukta mı? Rakip oturduysa false döner.</summary>
     bool IsWaiting(Guid matchId);
 
+    /// <summary>Şu an rakip bekleyen açık koltuklar.</summary>
+    IReadOnlyList<OnlineSeat> Waiting { get; }
+
     /// <summary>Açık koltuk hâlâ bekliyorsa kuyruktan düşer.</summary>
     void Release(Guid matchId);
 }

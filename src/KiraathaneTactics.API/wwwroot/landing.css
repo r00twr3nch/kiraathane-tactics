@@ -872,7 +872,14 @@ h1 {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.leaderboard { margin: 0; padding: 0; list-style: none; }
+.leaderboard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
 .leaderboard.quiet { display: none; }
 .leaderboard li {
   display: grid;
@@ -880,12 +887,31 @@ h1 {
   gap: 12px;
   align-items: center;
   min-height: 58px;
-  margin-top: 8px;
+  margin: 0;
   padding: 8px 12px;
   border-radius: 16px;
   background: rgba(255, 253, 248, 0.72);
   box-shadow: inset 0 0 0 1px rgba(74, 44, 26, 0.08);
 }
+.leaderboard .place-1 {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(255, 226, 150, 0.72), transparent 42%),
+    #fffaf0;
+  box-shadow: inset 0 1px 0 #fff, inset 0 0 0 1px rgba(201, 161, 90, 0.55);
+}
+.leaderboard .place-2 {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(244, 241, 234, 0.9), transparent 42%),
+    #fffdf8;
+}
+.leaderboard .place-3 {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(240, 199, 162, 0.55), transparent 42%),
+    #fffdf8;
+}
+.leaderboard .place-1 .rank { background: linear-gradient(160deg, #f8e7b0, #b8893a); color: #2a170e; }
+.leaderboard .place-2 .rank { background: linear-gradient(160deg, #f4f1ea, #b7aea2); color: #2a170e; }
+.leaderboard .place-3 .rank { background: linear-gradient(160deg, #f0c7a2, #a8643c); color: #2a170e; }
 .leaderboard .rank {
   display: grid;
   place-items: center;
@@ -1572,52 +1598,90 @@ dialog.searching .tea-spoon {
     box-shadow: inset 0 1px 0 #fff6d4, 0 5px 0 #6d501c;
   }
   .dock {
+    --notch: 78px;
     position: fixed;
     z-index: 5;
-    left: 12px;
-    right: 12px;
+    left: 14px;
+    right: 14px;
     bottom: calc(10px + env(safe-area-inset-bottom));
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 6px;
+    grid-template-columns: 1fr 1fr var(--notch) 1fr 1fr;
+    align-items: end;
+    height: 72px;
     margin: 0;
-    padding: 8px;
+    padding: 0 6px 8px;
+    overflow: visible;
     border-radius: 26px;
-    background:
-      linear-gradient(180deg, rgba(255, 236, 205, 0.16), transparent 28%),
-      linear-gradient(180deg, #6a4128, #2a170e);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 226, 176, 0.45),
-      0 10px 0 #140c08,
-      0 18px 28px rgba(0, 0, 0, 0.45);
+    background: transparent;
+    box-shadow: none;
+  }
+  .dock::before, .dock::after {
+    content: "";
+    position: absolute;
+    border-radius: inherit;
+    pointer-events: none;
+  }
+  .dock::before {
+    z-index: 0;
+    inset: 0;
+    background: linear-gradient(180deg, #5c3824 0%, #2a170e 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 226, 176, 0.35);
+    -webkit-mask: radial-gradient(circle 36px at 50% 2px, transparent 35px, #000 36px);
+    mask: radial-gradient(circle 36px at 50% 2px, transparent 35px, #000 36px);
+  }
+  .dock::after {
+    z-index: -1;
+    inset: 0 -2px -12px;
+    background: #0c0705;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
   }
   .dock a, .dock button {
+    position: relative;
+    z-index: 1;
     min-width: 0;
-    min-height: 64px;
+    height: 56px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 5px;
-    padding: 6px 2px;
+    gap: 3px;
+    padding: 0;
     border: 0;
-    border-radius: 18px;
-    background: rgba(20, 12, 8, 0.28);
-    color: var(--paper);
+    border-radius: 16px;
+    background: transparent;
+    color: #e7d7c2;
     font: inherit;
-    font-size: 0.66rem;
+    font-size: 0.64rem;
     font-weight: 700;
-    line-height: 1.1;
+    line-height: 1;
+    letter-spacing: 0.01em;
     text-align: center;
     text-decoration: none;
     touch-action: manipulation;
     cursor: pointer;
   }
   .dock .dock-play {
-    background: linear-gradient(180deg, #f8e7b0, #e8c56a);
-    color: var(--ink);
+    z-index: 2;
+    align-self: start;
+    justify-self: center;
+    width: 68px;
+    height: 68px;
+    margin-top: -24px;
+    gap: 1px;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 50% 28%, #fff6d2, transparent 42%),
+      linear-gradient(180deg, #f4dd9a, #d7a84a 58%, #a97822);
+    color: #1c120b;
+    font-size: 0.68rem;
+    box-shadow:
+      inset 0 1px 0 #fff6d4,
+      0 0 0 6px #24140d,
+      0 8px 0 #6d501c;
   }
-  .dock a[aria-current="page"] { box-shadow: inset 0 0 0 2px var(--brass); }
+  .dock .dock-play .ico { width: 24px; height: 24px; stroke-width: 2.1; }
+  .dock a[aria-current="page"]:not(.dock-play) { color: #f0d48a; }
+  .dock a[aria-current="page"]:not(.dock-play) .ico { stroke: #f0d48a; }
   .dock a:focus-visible, .dock button:focus-visible {
     outline: 3px solid var(--brass);
     outline-offset: 2px;
@@ -1629,13 +1693,18 @@ dialog.searching .tea-spoon {
     white-space: nowrap;
   }
   .dock .ico {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     fill: none;
     stroke: currentColor;
-    stroke-width: 1.8;
+    stroke-width: 1.7;
     stroke-linecap: round;
     stroke-linejoin: round;
+  }
+  @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    .dock a, .dock button { transition: transform 160ms ease, color 160ms ease; }
+    .dock a:active, .dock button:active { transform: translateY(2px); }
+    .dock .dock-play:active { transform: translateY(3px); }
   }
   .cafe .wisp { bottom: 28%; }
   .panel {
@@ -1742,8 +1811,8 @@ dialog.searching .tea-spoon {
   .podium strong { font-size: 0.92rem; }
   .podium em { font-size: 1.35rem; }
   .podium small { font-size: 0.66rem; }
-  .leaderboard { flex: 1; min-height: 0; overflow: auto; }
-  .leaderboard li { min-height: 46px; margin-top: 6px; padding: 4px 8px; }
+  .leaderboard { flex: 1; gap: 6px; min-height: 0; overflow: auto; }
+  .leaderboard li { min-height: 52px; padding: 6px 10px; }
   .leaderboard .empty { min-height: 140px; }
   .leaderboard .empty b { font-size: 1.45rem; }
 }

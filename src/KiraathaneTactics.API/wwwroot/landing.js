@@ -37,33 +37,17 @@ function renderBoard() {
 }
 
 function paintBoard(rows) {
-  const podium = document.querySelector("#podium");
   if (!rows.length) {
-    if (podium) {
-      podium.hidden = true;
-      podium.replaceChildren();
-    }
     board.classList.remove("quiet");
     board.innerHTML = `<li class="empty"><b>Duvar boş</b><span>İlk insan maçını bitiren adını buraya yazar. Çaycı sayılmaz.</span></li>`;
     return;
   }
-  const shown = rows.slice(0, 8);
-  if (podium) {
-    podium.hidden = false;
-    const seats = [shown[1], shown[0], shown[2]].filter(Boolean);
-    podium.replaceChildren(...seats.map((row) => {
-      const place = shown.indexOf(row) + 1;
-      const item = document.createElement("li");
-      item.className = `seat seat-${place}`;
-      item.innerHTML = `<span class="medal" aria-hidden="true">${place}</span><strong>${escapeHtml(row.Name || row.name)}</strong><em>${row.Points ?? row.points}</em><small>${wallDetail(row)}</small>`;
-      return item;
-    }));
-  }
-  const rest = shown.slice(3);
-  board.classList.toggle("quiet", rest.length === 0);
-  board.replaceChildren(...rest.map((row, index) => {
+  board.classList.remove("quiet");
+  board.replaceChildren(...rows.map((row, index) => {
+    const place = index + 1;
     const item = document.createElement("li");
-    item.innerHTML = `<span class="rank">${index + 4}</span><span class="who"><strong>${escapeHtml(row.Name || row.name)}</strong><small>${wallDetail(row)}</small></span><span class="score">${row.Points ?? row.points}</span>`;
+    item.className = place <= 3 ? `place place-${place}` : "";
+    item.innerHTML = `<span class="rank">${place}</span><span class="who"><strong>${escapeHtml(row.Name || row.name)}</strong><small>${wallDetail(row)}</small></span><span class="score">${row.Points ?? row.points}</span>`;
     return item;
   }));
 }
@@ -353,7 +337,7 @@ function paintAccount() {
     link.href = "/kapi.html";
     link.innerHTML = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.2"/><path d="M6.2 19.2c.8-3 2.8-4.6 5.8-4.6s5 1.6 5.8 4.6"/></svg><span></span>';
     if (onDoor) link.setAttribute("aria-current", "page");
-    dock.append(link);
+    dock.prepend(link);
   });
   document.querySelectorAll("[data-account], [data-profile] span").forEach((node) => {
     node.textContent = label;

@@ -36,6 +36,8 @@ public static class DependencyInjection
             });
         services.AddScoped<IMatchNotifier, SignalRMatchNotifier>();
         services.AddSingleton<IOnlineQueue, OnlineQueue>();
+        services.AddScoped<QueueBotPlayer>();
+        services.AddHostedService<QueueBotHost>();
 
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserService, CurrentUserService>();

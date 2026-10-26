@@ -33,6 +33,8 @@ public sealed class OnlineQueue : IOnlineQueue
 
     public bool IsWaiting(Guid matchId) => _offers.ContainsKey(matchId);
 
+    public IReadOnlyList<OnlineSeat> Waiting => _offers.Values.Select(offer => offer.Seat).ToList();
+
     public void Release(Guid matchId) => _offers.TryRemove(matchId, out _);
 
     private sealed record Offer(OnlineSeat Seat, DateTimeOffset OpenedAt);
