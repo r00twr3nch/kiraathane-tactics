@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,680&family=Outfit:wght@400;500;650&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="landing.css?v=86" />
+  <link rel="stylesheet" href="landing.css?v=87" />
 </head>
 <body class="page-board">
   <div class="room" aria-hidden="true">
@@ -28,11 +28,16 @@
       <header class="folio-head">
         <p class="folio-mark">Tezgâh</p>
         <h1 id="market-title"><span>Avatar</span> <em>seçilir</em></h1>
-        <p class="lede">Her galibiyet 25 altın bırakır. Tezgâhta kıraathane yüzleri, çerçeve ve renk durur. Takılan yüz kapıdaki avatara işlenir.</p>
+        <p class="lede">Her galibiyet 25 altın bırakır. Yüz, çerçeve ve renk ayrı rafta durur. Takılan yüz kapıdaki avatara işlenir.</p>
       </header>
       <p class="market-purse" id="market-purse"><span>Altın</span><strong>0</strong></p>
+      <div class="market-tabs" role="tablist" aria-label="Tezgâh rafları">
+        <button type="button" role="tab" id="tab-faces" aria-controls="market-grid" aria-selected="true">Yüzler</button>
+        <button type="button" role="tab" id="tab-frames" aria-controls="market-grid" aria-selected="false">Çerçeveler</button>
+        <button type="button" role="tab" id="tab-colors" aria-controls="market-grid" aria-selected="false">Renkler</button>
+      </div>
       <p class="note" id="market-note"></p>
-      <div class="market-grid" id="market-grid"></div>
+      <div class="market-grid" id="market-grid" role="tabpanel" aria-labelledby="tab-faces"></div>
     </section>
   </main>
   <nav class="dock" aria-label="Masa">
@@ -43,6 +48,6 @@
   </nav>
   <script src="portraits.js?v=3"></script>
   <script src="landing.js?v=45"></script>
-  <script src="market.js?v=4"></script>
+  <script src="market.js?v=5"></script>
 </body>
 </html>

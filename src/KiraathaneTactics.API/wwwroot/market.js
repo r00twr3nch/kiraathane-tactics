@@ -3,6 +3,18 @@ const accountApi = window.KiraathaneAccount;
 const purseNode = document.querySelector("#market-purse strong");
 const note = document.querySelector("#market-note");
 const grid = document.querySelector("#market-grid");
+const tabs = [...document.querySelectorAll(".market-tabs [role=tab]")];
+const shelves = { "tab-faces": "faces", "tab-frames": "frames", "tab-colors": "colors" };
+let shelf = "faces";
+
+tabs.forEach((tab) => {
+  tab.addEventListener("click", () => {
+    shelf = shelves[tab.id];
+    tabs.forEach((item) => item.setAttribute("aria-selected", String(item === tab)));
+    grid.setAttribute("aria-labelledby", tab.id);
+    paint();
+  });
+});
 
 paint();
 
@@ -16,8 +28,8 @@ function paint() {
     return;
   }
   note.textContent = "";
-  ["faces", "frames", "colors"].forEach((kind) => {
-    accountApi.looks[kind].forEach((item) => {
+  const kind = shelf;
+  accountApi.looks[kind].forEach((item) => {
       const slot = kind === "faces" ? "face" : kind === "frames" ? "frame" : "color";
       const token = `${slot}:${item.id}`;
       const owned = purse.owned.includes(token);
@@ -51,6 +63,5 @@ function paint() {
       card.append(swatch, copy, button);
       grid.append(card);
     });
-  });
 }
 })();

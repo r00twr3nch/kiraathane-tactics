@@ -276,6 +276,28 @@ body {
   color: #4a2c1a;
 }
 .market-purse strong { color: var(--brass-deep); font-family: var(--font-display); font-size: 1.5rem; }
+.market-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0 0 12px;
+}
+.market-tabs button {
+  min-height: 40px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(74, 44, 26, 0.08);
+  color: #4a2c1a;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.market-tabs button[aria-selected="true"] {
+  background: linear-gradient(180deg, #f8e7b0, #e8c56a);
+  color: var(--ink);
+}
 .market-grid { display: grid; gap: 10px; min-height: 0; overflow: auto; }
 .market-card {
   display: grid;
@@ -1633,14 +1655,15 @@ dialog.searching .tea-spoon {
     flex: 1;
     min-height: 0;
     grid-template-columns: 1fr;
-    grid-template-rows: 1.35fr 1fr 1fr;
+    grid-template-rows: 1.15fr 1.2fr 0.85fr;
     gap: 8px;
   }
-  .mode { min-height: 0; gap: 6px; padding: 10px 12px 12px; overflow: visible; }
+  .mode { min-height: 0; gap: 6px; padding: 10px 12px 12px; overflow: hidden; }
   .mode h2 { font-size: 1.05rem; }
   .mode p { font-size: 0.78rem; line-height: 1.25; }
   .mode .cta { min-height: 42px; padding: 0 14px; }
-  .room-actions { gap: 12px; }
+  .room-actions { gap: 8px; }
+  .join-room { gap: 8px; }
   .join-room input { min-height: 42px; }
   .levels { gap: 6px; margin: 2px 0 4px; }
   .levels legend { margin-bottom: 2px; font-size: 0.68rem; }
