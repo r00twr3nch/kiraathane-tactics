@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,680&family=Outfit:wght@400;500;650&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="landing.css?v=81" />
+  <link rel="stylesheet" href="landing.css?v=82" />
 </head>
 <body class="page-play page-door">
   <div class="room" aria-hidden="true">
@@ -26,7 +26,7 @@
     <section class="door" aria-labelledby="door-title">
       <p class="door-mark">Müessese kapısı</p>
       <h1 id="door-title">Adın <em>masaya</em> yazılsın</h1>
-      <p class="lede">Kayıtta bir kez isim soyisim yazılır. Oyunda görünen tek ad odur.</p>
+      <p class="lede">Kayıtta bir kez kullanıcı adı yazılır. Oyunda görünen tek ad odur.</p>
       <div id="door-session" hidden></div>
       <div id="door-forms">
         <div class="door-tabs" role="tablist" aria-label="Kapı">
@@ -43,8 +43,8 @@
           <button class="cta" type="submit">İçeri gir</button>
         </form>
         <form id="form-up" hidden>
-          <label>İsim soyisim
-            <input name="fullName" autocomplete="name" required minlength="2" maxlength="40" />
+          <label>Kullanıcı adı
+            <input name="fullName" autocomplete="nickname" placeholder="Örn. Çaycı Nuri" required minlength="2" maxlength="40" />
           </label>
           <label>E-posta
             <input name="email" type="email" autocomplete="email" required maxlength="256" />
@@ -64,6 +64,6 @@
     <a href="/kurallar.html"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5.5h12v14H6z"/><path d="M9 9h6M9 12.5h6M9 16h4"/></svg>Kurallar</a>
   </nav>
   <script src="landing.js?v=41"></script>
-  <script src="kapi.js?v=10"></script>
+  <script src="kapi.js?v=11"></script>
 </body>
 </html>

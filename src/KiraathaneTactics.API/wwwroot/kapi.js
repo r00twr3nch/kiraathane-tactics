@@ -40,14 +40,20 @@ function paintDoor() {
   avatar.className = "door-avatar";
   avatar.setAttribute("aria-hidden", "true");
   avatar.textContent = initials(username);
-  const standing = document.createElement("p");
-  standing.className = "door-rank";
-  standing.textContent = rank.next == null
-    ? `${rank.title} · ${wins} galibiyet`
-    : `${rank.title} · ${wins} galibiyet · sıradaki ${rank.next}`;
+  const details = document.createElement("section");
+  details.className = "profile-details";
+  details.setAttribute("aria-label", "Profil bilgileri");
   const facts = document.createElement("dl");
   facts.className = "door-lines";
-  facts.append(line("İsim", username), line("Mail", account.Email));
+  const nextRank = rank.next == null ? "Son basamak" : `${rank.next} galibiyet`;
+  facts.append(
+    line("İsim", username),
+    line("Mail", account.Email),
+    line("Ünvan", rank.title),
+    line("Galibiyet", String(wins)),
+    line("Sıradaki", nextRank),
+  );
+  details.append(facts);
   const out = document.createElement("button");
   out.type = "button";
   out.textContent = "Çıkış";
@@ -56,7 +62,7 @@ function paintDoor() {
     if (window.KiraathaneAccount) window.KiraathaneAccount.paint();
     location.reload();
   });
-  sessionBox.append(avatar, standing, facts, out);
+  sessionBox.append(avatar, details, out);
 }
 
 function line(term, value) {

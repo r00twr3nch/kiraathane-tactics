@@ -75,6 +75,7 @@ try
 
     app.UseSerilogRequestLogging(); // her HTTP isteği için özet log
     app.UseHttpsRedirection();
+    app.UseDefaultFiles();
     app.UseStaticFiles();
 
     app.UseAuthentication();

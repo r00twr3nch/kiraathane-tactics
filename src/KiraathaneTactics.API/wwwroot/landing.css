@@ -261,12 +261,19 @@ body {
   font-weight: 700;
   letter-spacing: 0.04em;
 }
+.profile-details {
+  width: min(320px, 100%);
+  padding: 14px 16px 12px;
+  border: 1px solid rgba(215, 177, 90, 0.28);
+  border-radius: 16px;
+  background: rgba(20, 12, 8, 0.26);
+}
 .door-lines {
   display: grid;
   gap: 10px;
-  width: min(280px, 100%);
-  margin: 0 0 8px;
-  text-align: center;
+  width: 100%;
+  margin: 0;
+  text-align: left;
 }
 .door-lines div { min-width: 0; }
 .door-lines dt {
@@ -290,6 +297,13 @@ body {
   font-family: inherit;
   font-size: 0.92rem;
   font-weight: 650;
+}
+.door-lines div + div {
+  padding-top: 9px;
+  border-top: 1px solid rgba(255, 226, 176, 0.12);
+}
+.door-lines div + div dd {
+  font-size: 0.98rem;
 }
 .door-session button {
   align-self: center;
