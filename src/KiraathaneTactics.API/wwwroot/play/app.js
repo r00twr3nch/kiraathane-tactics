@@ -41,13 +41,17 @@ async function boot() {
   window.setInterval(paintClocks, 1000);
   const handed = sessionStorage.getItem("kiraathane-seat");
   if (handed) {
-    sessionStorage.removeItem("kiraathane-seat");
     state.seat = JSON.parse(handed);
     state.bot = new URLSearchParams(location.search).has("bot")
       ? JSON.parse(sessionStorage.getItem("kiraathane-bot") || "null")
       : null;
-    sessionStorage.removeItem("kiraathane-bot");
+    if (!state.bot) sessionStorage.removeItem("kiraathane-bot");
     await loadMatch(state.seat.MatchId);
+    const over = state.match?.Status === "Completed" || state.match?.Status === "Draw";
+    if (over) {
+      sessionStorage.removeItem("kiraathane-seat");
+      sessionStorage.removeItem("kiraathane-bot");
+    }
     const ranks = { cirak: "Çırak", kalfa: "Kalfa", usta: "Usta" };
     setStatus(state.bot
       ? `${ranks[state.bot.level] || "Kalfa"} çaycı karşında. İlk yudum sende.`
@@ -83,6 +87,8 @@ async function restartMatch() {
       level: bot.level,
       catalog: bot.catalog
     };
+    sessionStorage.setItem("kiraathane-seat", JSON.stringify(state.seat));
+    sessionStorage.setItem("kiraathane-bot", JSON.stringify(state.bot));
     await loadMatch(light.MatchId);
     curtain.hidden = true;
     const ranks = { cirak: "Çırak", kalfa: "Kalfa", usta: "Usta" };
