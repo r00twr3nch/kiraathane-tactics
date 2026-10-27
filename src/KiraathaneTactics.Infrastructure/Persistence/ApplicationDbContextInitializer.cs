@@ -338,25 +338,52 @@ public sealed class ApplicationDbContextInitializer(
         if (await context.TileDefinitions.AnyAsync(cancellationToken))
         {
             await AlignCatalogWeightsAsync(cancellationToken);
+            await AddMissingTilesAsync(cancellationToken);
             return;
         }
 
         logger.LogInformation("Kıraathane taş kataloğu oluşturuluyor...");
 
-        // Ortadaki sayı fincanın ağırlığıdır: kenarların ortalamasına yakın, beraberlikte karar verir.
-        TileDefinition[] catalog =
-        [
-            new("Çay", 3, TileEdges.Create(2, 4, 1, 3)),
-            new("Kahve", 3, TileEdges.Create(6, 2, 4, 1)),
-            new("Nargile", 3, TileEdges.Create(1, 7, 2, 3)),
-            new("Tavla", 4, TileEdges.Create(5, 3, 6, 2)),
-            new("Gazete", 3, TileEdges.Create(3, 1, 2, 5)),
-            new("Lokum", 1, TileEdges.Create(1, 2, 1, 1)),
-            new("Satranç", 7, TileEdges.Create(7, 5, 4, 6)),
-            new("Boş Fincan", 2, TileEdges.Create(0, 3, 4, 2))
-        ];
+        context.TileDefinitions.AddRange(CatalogTiles());
+        await context.SaveChangesAsync(cancellationToken);
+    }
 
-        context.TileDefinitions.AddRange(catalog);
+    /// <summary>
+    /// On dört fincan, elde iki tam sıra. Kenarlar aynı kuralı konuşur; ortadaki sayı yalnız beraberlikte ağırlık olur.
+    /// Kör Fincan kimseyi alamaz. Hançer tek yöne yüklenir. Tepsi dört yana da orta bakar.
+    /// Kama iki karşı kenarı keser. Nargile Çekimi doğuya yaslanır.
+    /// </summary>
+    private static TileDefinition[] CatalogTiles() =>
+    [
+        new("Çay", 3, TileEdges.Create(2, 4, 1, 3)),
+        new("Kahve", 3, TileEdges.Create(6, 2, 4, 1)),
+        new("Nargile", 3, TileEdges.Create(1, 7, 2, 3)),
+        new("Tavla", 4, TileEdges.Create(5, 3, 6, 2)),
+        new("Gazete", 3, TileEdges.Create(3, 1, 2, 5)),
+        new("Lokum", 1, TileEdges.Create(1, 2, 1, 1)),
+        new("Satranç", 7, TileEdges.Create(7, 5, 4, 6)),
+        new("Boş Fincan", 2, TileEdges.Create(0, 3, 4, 2)),
+        new("Kör Fincan", 4, TileEdges.Create(0, 0, 0, 0)),
+        new("Hançer", 2, TileEdges.Create(9, 0, 0, 1)),
+        new("Tepsi", 5, TileEdges.Create(4, 4, 4, 4)),
+        new("Zar", 6, TileEdges.Create(8, 1, 3, 2)),
+        new("Kama", 3, TileEdges.Create(6, 0, 6, 0)),
+        new("Çekim", 4, TileEdges.Create(1, 8, 2, 0))
+    ];
+
+    /// <summary>Eski veritabanına sonradan eklenen fincanları isimle tamamlar. Var olana dokunmaz.</summary>
+    private async Task AddMissingTilesAsync(CancellationToken cancellationToken)
+    {
+        var names = await context.TileDefinitions
+            .Select(tile => tile.Name)
+            .ToListAsync(cancellationToken);
+        var known = new HashSet<string>(names, StringComparer.Ordinal);
+        var missing = CatalogTiles().Where(tile => !known.Contains(tile.Name)).ToArray();
+        if (missing.Length == 0)
+            return;
+
+        logger.LogInformation("Kataloga {Count} yeni fincan ekleniyor.", missing.Length);
+        context.TileDefinitions.AddRange(missing);
         await context.SaveChangesAsync(cancellationToken);
     }
 
@@ -372,7 +399,13 @@ public sealed class ApplicationDbContextInitializer(
             ["Gazete"] = 3,
             ["Lokum"] = 1,
             ["Satranç"] = 7,
-            ["Boş Fincan"] = 2
+            ["Boş Fincan"] = 2,
+            ["Kör Fincan"] = 4,
+            ["Hançer"] = 2,
+            ["Tepsi"] = 5,
+            ["Zar"] = 6,
+            ["Kama"] = 3,
+            ["Çekim"] = 4
         };
 
         var tiles = await context.TileDefinitions.ToListAsync(cancellationToken);

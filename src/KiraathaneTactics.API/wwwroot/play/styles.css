@@ -727,8 +727,8 @@ body.in-match .lobby { display: none; }
   .ghost { min-height: 32px; padding: 0 8px; }
 
   .catalog {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 6px;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 4px;
     margin: 6px 0;
   }
 
